@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isAdmin()    { return signedIn() && role() == 'admin'; }
+    function isMerchant() { return signedIn() && (role() == 'merchant' || role() == 'admin'); }
+
+    // 사용자
+    match /users/{uid} {
+      allow read:   if signedIn();                 // 로그인 시 다른 사용자 조회 가능(구매자/판매자 찾기)
+      allow create: if isAdmin();                  // 명단 생성은 관리자만
+      allow delete: if isAdmin();
+      allow update: if signedIn() && (
+        // 본인 문서: wishlist / mustChangePassword / balance(±1)만 허용
+        ( request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['wishlist', 'mustChangePassword', 'balance'])
+          && request.resource.data.balance >= resource.data.balance - 1
+          && request.resource.data.balance <= resource.data.balance + 1
+        )
+        || isMerchant()                            // 상인/관리자: 판매 정산 시 구매자/판매자 갱신
+      );
+    }
+
+    // 물품
+    match /items/{itemId} {
+      allow read:   if signedIn();
+      allow create: if signedIn()
+                    && request.resource.data.sellerUid == request.auth.uid;  // 본인 물품만 등록
+      allow update: if signedIn() && (
+        resource.data.sellerUid == request.auth.uid                          // 본인 물품 수정/삭제
+        || isMerchant()                                                      // 상인/관리자: 판매·마켓지정
+      );
+      allow delete: if isAdmin();
+    }
+
+    // 물품번호 채번
+    match /counters/{key} {
+      allow read:  if signedIn();
+      allow write: if signedIn();    // 등록 트랜잭션에서 사용
+    }
+
+    // 학급 리프 집계
+    match /classStats/{key} {
+      allow read: if true;  // ← 나무 화면이 로그인 없이 읽도록 공개
+      allow write: if isMerchant();  // 판매 정산에서만 누적
+    }
+
+    // 설정(카테고리·체크리스트·페이즈·후기폼 등)
+    match /config/{doc} {
+      allow read:  if true;    // ← 나무의 반 드롭다운(groupMapping) 등 읽도록 공개
+      allow write: if isAdmin();
+    }
+  }
+}

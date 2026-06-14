@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>길음중 아나바다</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2d5f3f">
+</head>
+<body>
+  <main class="login-screen">
+    <header class="login-header">
+      <h1>길음중<br>아나바다</h1>
+      <p class="subtitle">길음장터에 오신 것을 환영합니다</p>
+    </header>
+
+    <form id="loginForm" class="login-form">
+      <label>
+        <span>학번</span>
+        <input type="text" id="studentId" placeholder="예: 2630915" autocomplete="off" required>
+      </label>
+
+      <label>
+        <span>비밀번호</span>
+        <input type="password" id="password" placeholder="처음이라면 000000" required>
+      </label>
+
+      <button type="submit" class="btn-primary">로그인</button>
+
+      <p id="message" class="message"></p>
+    </form>
+
+    <footer class="login-footer">
+      <small>비밀번호는 학교 구글 계정과 무관합니다.</small>
+    </footer>
+  </main>
+
+  <script type="module">
+    import { loginWithStudentId } from './js/auth.js';
+
+    const form = document.getElementById("loginForm");
+    const msg  = document.getElementById("message");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      const studentId = document.getElementById("studentId").value.trim();
+      const password  = document.getElementById("password").value;
+      if(!studentId || !password){ msg.textContent = "학번과 비밀번호를 입력하세요."; return; }
+
+      try {
+        const { profile } = await loginWithStudentId(studentId, password);
+        if(profile && profile.mustChangePassword){
+          window.location.href = "change-password.html";   // 최초 로그인
+        } else {
+          window.location.href = "main.html";              // 이미 비번 바꾼 사람
+        }
+      } catch(err){
+        const code = err.code || "";
+        if(["auth/invalid-credential","auth/wrong-password","auth/user-not-found"].includes(code))
+          msg.textContent = "학번 또는 비밀번호가 올바르지 않습니다.";
+        else if(code === "auth/invalid-email")
+          msg.textContent = "학번 형식이 올바르지 않습니다.";
+        else
+          msg.textContent = "로그인 오류: " + (err.code || err.message);
+      }
+    });
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () =>
+        navigator.serviceWorker.register("service-worker.js").catch(() => {})
+      );
+    }
+  </script>
+</body>
+</html>

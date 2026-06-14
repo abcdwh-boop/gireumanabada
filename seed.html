@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기본 설정 심기</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-wrap { max-width: 560px; margin: 0 auto; padding: 24px; }
+    .admin-wrap h1 { font-size: 22px; color: #2d5f3f; margin-bottom: 8px; }
+    .admin-wrap .desc { font-size: 14px; color: #6b7c6b; margin-bottom: 20px; }
+    #log { margin-top: 16px; font-size: 13px; background:#0f172a; color:#cbd5e1;
+           padding:12px; border-radius:8px; height: 220px; overflow:auto;
+           white-space: pre-wrap; font-family: ui-monospace, monospace; }
+  </style>
+</head>
+<body>
+  <div class="admin-wrap">
+    <h1>기본 설정 심기 (임시)</h1>
+    <p class="desc">카테고리·리프값, 체크리스트, 마켓 단계, 그룹 매핑의 기본값을
+       Firestore <b>config</b>에 저장합니다. 한 번만 누르면 됩니다.</p>
+    <button id="seedBtn" class="btn-primary">기본 설정 심기</button>
+    <div id="log"></div>
+  </div>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const logEl = document.getElementById("log");
+    const log = (m) => { logEl.textContent += m + "\n"; logEl.scrollTop = logEl.scrollHeight; };
+
+    document.getElementById("seedBtn").addEventListener("click", async () => {
+      logEl.textContent = "";
+      try {
+        await setDoc(doc(db, "config", "footprintTable"), { categories: [
+          { name: "의류·신발",     leaf: 5 },
+          { name: "가방류",        leaf: 5 },
+          { name: "도서·지류",     leaf: 5 },
+          { name: "생활용품",      leaf: 7 },
+          { name: "장난감·인형",   leaf: 3 },
+          { name: "가전·배터리",   leaf: 10 },
+          { name: "보드게임류",    leaf: 4 },
+          { name: "학용품·문구류", leaf: 3 },
+        ]});
+        log("✅ footprintTable (카테고리·리프값 8종) 저장");
+
+        await setDoc(doc(db, "config", "checkList"), { items: [
+          "식품류가 아닙니다",
+          "새 물건이 아닙니다",
+          "고가의 물건이 아닙니다",
+          "학생이 소지하기 적합한 물건입니다",
+          "누군가에겐 필요할 물건입니다",
+          "깨끗하고 사용 가능한 상태입니다",
+        ]});
+        log("✅ checkList (체크리스트 6항목) 저장");
+
+        await setDoc(doc(db, "config", "phaseSchedule"), {
+          phase: "pre-open",        // 마켓 시작 전
+          registerDeadline: null,
+          A_start: null, A_end: null, B_start: null, B_end: null
+        });
+        log("✅ phaseSchedule (마켓 단계) 저장");
+
+        await setDoc(doc(db, "config", "groupMapping"), { groups: {
+          G1: { grade: 1, classes: [1,2,3,4,5] },
+          G2: { grade: 1, classes: [6,7,8,9,10] },
+          G3: { grade: 2, classes: [1,2,3,4] },
+          G4: { grade: 2, classes: [5,6,7,8,9,10] },
+          G5: { grade: 3, classes: [1,2,3] },
+          G6: { grade: 3, classes: [4,5,6,10] },
+          G7: { grade: 3, classes: [7,8,9] },
+        }});
+        log("✅ groupMapping (그룹 G1~G7) 저장");
+
+        log("\n끝! config 문서 4개 저장 완료.");
+      } catch(e){
+        log("❌ 오류: " + (e.code || e.message));
+      }
+    });
+  </script>
+</body>
+</html>

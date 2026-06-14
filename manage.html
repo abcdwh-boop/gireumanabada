@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>관리자 설정</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="app-screen">
+    <div class="page-top">
+      <button class="back-link" onclick="location.href='main.html'">← 메인으로</button>
+    </div>
+    <div class="page-title">관리자 설정</div>
+    <p id="guard" class="greeting"></p>
+
+    <div id="panel">
+      <div class="section" style="border-top:none; padding-top:0;">
+        <h2>역할 지정 (상인 임명)</h2>
+        <div class="edit-row">
+          <input type="text" id="roleSid" placeholder="학번 (예: 2630904)">
+          <select id="roleSel">
+            <option value="student">학생</option>
+            <option value="merchant">상인</option>
+            <option value="admin">관리자</option>
+          </select>
+          <button type="button" id="roleBtn" class="mini">변경</button>
+        </div>
+        <p id="roleMsg" class="message"></p>
+      </div>
+
+      <div class="section">
+        <h2>카테고리 · 리프값</h2>
+        <div id="catRows"></div>
+        <button type="button" id="addCat" class="mini">+ 카테고리 추가</button>
+        <button type="button" id="saveCat" class="btn-primary btn-block" style="margin-top:10px;">카테고리 저장</button>
+        <p id="catMsg" class="message"></p>
+      </div>
+
+      <div class="section">
+        <h2>등록 체크리스트</h2>
+        <div id="ckRows"></div>
+        <button type="button" id="addCk" class="mini">+ 항목 추가</button>
+        <button type="button" id="saveCk" class="btn-primary btn-block" style="margin-top:10px;">체크리스트 저장</button>
+        <p id="ckMsg" class="message"></p>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./js/manage.js"></script>
+</body>
+</html>

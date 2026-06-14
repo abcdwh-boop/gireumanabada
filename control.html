@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>운영 제어</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="app-screen">
+    <div class="page-top">
+      <button class="back-link" onclick="location.href='main.html'">← 메인으로</button>
+    </div>
+    <div class="page-title">운영 제어</div>
+    <p id="guard" class="greeting"></p>
+
+    <div id="panel">
+      <div class="current-box">
+        <div class="lbl">현재 마켓 단계</div>
+        <div class="val" id="current">…</div>
+      </div>
+      <div id="buttons"></div>
+      <p id="msg" class="message"></p>
+    </div>
+  </main>
+
+  <script type="module" src="./js/control.js"></script>
+</body>
+</html>

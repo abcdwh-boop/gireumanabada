@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>길음중 아나바다</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2d5f3f">
+</head>
+<body>
+  <main class="app-screen">
+    <div class="app-header">
+      <h1>길음중 아나바다</h1>
+      <button id="logoutBtn" class="logout-link">로그아웃</button>
+    </div>
+    <p id="greeting" class="greeting">불러오는 중…</p>
+
+    <div class="stats">
+      <div class="stat"><div class="num" id="balance">-</div><div class="label">보유 G</div></div>
+      <div class="stat"><div class="num" id="leaf">-</div><div class="label">환경기여도(리프)</div></div>
+      <div class="stat"><div class="num" id="tx">-</div><div class="label">거래 건수</div></div>
+    </div>
+
+    <nav class="menu-grid" id="menu"></nav>
+  </main>
+
+  <script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { logout } from './js/auth.js';
+
+    const ROLE_KO = { student: "학생", merchant: "상인", admin: "관리자" };
+
+    // 등급별 메뉴 정의
+    const COMMON = [
+      { title: "내 물품 관리", desc: "등록 · 상태 변경", page: "register.html" },
+      { title: "시장 구경",   desc: "전체 물품 보기",  page: "market.html" },
+      { title: "찜 목록",     desc: "관심 물품",       page: "wishlist.html" },
+      { title: "내 구매 내역", desc: "내가 산 물건",    page: "purchases.html" },
+      { title: "구매 후기",   desc: "설문 작성",       page: "review.html" },
+    ];
+    const MERCHANT = [
+      { title: "판매 처리", desc: "판매완료 입력", page: "merchant.html", role: true },
+      { title: "마켓 지정", desc: "내 학급 A/B",   page: "assign.html",   role: true },
+    ];
+    const ADMIN = [
+      { title: "운영 제어",   desc: "페이즈 전환",   page: "control.html", role: true },
+      { title: "관리자 설정", desc: "역할·카테고리", page: "manage.html",  role: true },
+      { title: "나무 화면", desc: "전자칠판용", page: "tree.html", role: true },
+    ];
+    let menuDone = false;
+    function renderMenu(role){
+      if(menuDone) return;          // 한 번만 그림
+      menuDone = true;
+      const items = [...COMMON];
+      if(role === "merchant") items.push(...MERCHANT);
+      if(role === "admin")    items.push(...ADMIN, ...MERCHANT); // 관리자는 상인 기능도 사용
+
+      const menu = document.getElementById("menu");
+      for(const it of items){
+        const b = document.createElement("button");
+        b.className = "menu-btn" + (it.role ? " role" : "");
+        b.innerHTML = `<span class="m-title">${it.title}</span><span class="m-desc">${it.desc}</span>`;
+        b.addEventListener("click", () => {
+          const BUILT = ["register.html", "market.html", "wishlist.html", "merchant.html", "purchases.html", "assign.html", "control.html", "review.html", "manage.html", "tree.html" ];   // 만든 화면
+          if(BUILT.includes(it.page)) window.location.href = it.page;
+          else alert(`이 화면은 다음 단계에서 만듭니다 ☺️\n(${it.page})`);
+        });
+        menu.appendChild(b);
+      }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if(!user){ window.location.href = "index.html"; return; }
+      // 내 사용자 문서를 '실시간 구독' → 숫자가 바뀌면 화면이 저절로 갱신됨 (가벼운 리스너 1개)
+      onSnapshot(doc(db, "users", user.uid), (snap) => {
+        if(!snap.exists()){ document.getElementById("greeting").textContent = "사용자 정보를 찾을 수 없습니다."; return; }
+        const p = snap.data();
+        document.getElementById("greeting").textContent =
+          `${p.name} (${p.studentId}) · ${ROLE_KO[p.role] || p.role}`;
+        document.getElementById("balance").textContent = p.balance ?? 0;
+        document.getElementById("leaf").textContent    = p.leaf ?? 0;
+        document.getElementById("tx").textContent      = p.tradeCount ?? 0;
+        renderMenu(p.role);
+      });
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await logout();
+      window.location.href = "index.html";
+    });
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () =>
+        navigator.serviceWorker.register("service-worker.js").catch(() => {})
+      );
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>물품 등록</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="app-screen">
+    <div class="page-top">
+      <button class="back-link" onclick="location.href='main.html'">← 메인으로</button>
+    </div>
+    <div class="page-title">물품 등록</div>
+    <p id="notice" class="greeting"></p>
+
+    <form id="regForm" style="margin-top:14px;">
+      <label class="field">
+        <span>물품 구분</span>
+        <select id="category" required><option value="">불러오는 중…</option></select>
+        <span class="leaf-hint" id="leafHint"></span>
+      </label>
+
+      <label class="field"><span>물품명</span>
+        <input type="text" id="name" placeholder="예: 수학익힘책 3-1" required></label>
+
+      <label class="field"><span>용도</span>
+        <input type="text" id="usage" placeholder="예: 3학년 1학기 수학 보조교재"></label>
+
+      <label class="field"><span>사용 기간</span>
+        <input type="text" id="period" placeholder="예: 한 학기"></label>
+
+      <label class="field"><span>상태(사용감)</span>
+        <select id="condition">
+          <option>매우 좋음</option>
+          <option>좋음</option>
+          <option selected>보통</option>
+          <option>사용감 있음</option>
+        </select></label>
+
+      <label class="field"><span>스토리·추억 (선택)</span>
+        <textarea id="story" placeholder="이 물건에 얽힌 이야기를 적어보세요"></textarea></label>
+
+      <label class="field"><span>가격 (0~3 G · 0은 무료나눔)</span>
+        <select id="price">
+          <option value="0">0 G (무료나눔)</option>
+          <option value="1" selected>1 G</option>
+          <option value="2">2 G</option>
+          <option value="3">3 G</option>
+        </select></label>
+
+      <span style="font-size:13px;font-weight:600;color:#4a5a4a;">등록 전 확인 (모두 체크해야 등록돼요)</span>
+      <div class="checklist" id="checklist">불러오는 중…</div>
+
+      <button type="submit" id="submitBtn" class="btn-primary btn-block" disabled>모두 확인해야 등록돼요</button>
+      <button type="button" id="cancelEdit" class="mini" style="display:none; margin-top:10px;">편집 취소</button>
+      <p id="message" class="message"></p>
+    </form>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:24px 0 16px;">
+    <div class="page-title" style="font-size:17px;">내가 등록한 물품</div>
+    <div id="myItems" style="margin-top:12px;">불러오는 중…</div>
+  </main>
+
+  <script type="module" src="./js/register.js"></script>
+</body>
+</html>

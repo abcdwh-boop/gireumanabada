@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>판매완료 처리</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="app-screen">
+    <div class="page-top">
+      <button class="back-link" onclick="location.href='main.html'">← 메인으로</button>
+    </div>
+    <div class="page-title">판매완료 처리</div>
+    <p id="guard" class="greeting"></p>
+
+    <form id="saleForm" style="margin-top:14px;">
+      <label class="field"><span>물품번호</span>
+        <input type="text" id="itemNo" placeholder="예: 3-09-01" autocomplete="off" required></label>
+      <p id="preview" class="leaf-hint"></p>
+
+      <label class="field"><span>구매자 학번</span>
+        <input type="text" id="buyerId" placeholder="예: 2630905" autocomplete="off" required></label>
+
+      <label class="field"><span>실거래가 (0~3 G)</span>
+        <input type="number" id="price" min="0" max="3" step="1" placeholder="등록가 자동" required></label>
+
+      <button type="submit" id="submitBtn" class="btn-primary btn-block">판매완료 처리</button>
+      <p id="message" class="message"></p>
+    </form>
+  </main>
+
+  <script type="module" src="./js/merchant.js"></script>
+</body>
+</html>

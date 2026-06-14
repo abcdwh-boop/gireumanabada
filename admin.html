@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 - 명단 업로드</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-wrap { max-width: 560px; margin: 0 auto; padding: 24px; }
+    .admin-wrap h1 { font-size: 22px; color: #2d5f3f; margin-bottom: 8px; }
+    .admin-wrap .desc { font-size: 14px; color: #6b7c6b; margin-bottom: 20px; }
+    .upload-box { border: 2px dashed #b9c7b9; border-radius: 10px; padding: 20px; background:#fafbfa; }
+    .upload-box input[type=file] { width: 100%; margin-bottom: 12px; }
+    .btn-row { display:flex; gap:10px; flex-wrap:wrap; }
+    .btn-row button { flex:1; min-width:160px; }
+    .btn-sub { height:50px; border:none; border-radius:8px; background:#5a7a5a; color:#fff;
+               font-size:15px; font-weight:700; cursor:pointer; }
+    #log { margin-top: 16px; font-size: 13px; background:#0f172a; color:#cbd5e1;
+           padding:12px; border-radius:8px; height: 260px; overflow:auto;
+           white-space: pre-wrap; font-family: ui-monospace, monospace; }
+    .summary { font-weight: 700; margin-top: 12px; color:#2d5f3f; }
+  </style>
+</head>
+<body>
+  <div class="admin-wrap">
+    <h1>관리자 도구 (임시)</h1>
+    <p class="desc">CSV로 학생 계정을 만들고, 필요하면 기본 캐시를 보정합니다.
+       초기 비밀번호는 <b>000000</b>(0 여섯 개)입니다.</p>
+
+    <div class="upload-box">
+      <input type="file" id="csvFile" accept=".csv,text/csv">
+      <div class="btn-row">
+        <button id="uploadBtn" class="btn-primary">① CSV 업로드</button>
+        <button id="repairBtn" class="btn-sub">② 기본 3G 보정</button>
+      </div>
+    </div>
+
+    <div id="summary" class="summary"></div>
+    <div id="log"></div>
+  </div>
+
+  <script type="module">
+    import { db, firebaseConfig } from './js/firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, setDoc, updateDoc, collection, getDocs }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const DOMAIN = "gireum.sen.ms.kr";
+    const INIT_PASSWORD = "000000";
+
+    const secondaryApp  = initializeApp(firebaseConfig, "Uploader");
+    const secondaryAuth = getAuth(secondaryApp);
+
+    const logEl = document.getElementById("log");
+    const summaryEl = document.getElementById("summary");
+    const log = (m) => { logEl.textContent += m + "\n"; logEl.scrollTop = logEl.scrollHeight; };
+
+    function parseCSV(text){
+      text = text.replace(/^\uFEFF/, "");
+      const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim() !== "");
+      const rows = lines.map(l => l.split(",").map(c => c.trim()));
+      rows.shift();
+      return rows;
+    }
+
+    // ── ① CSV 업로드 ──────────────────────────
+    document.getElementById("uploadBtn").addEventListener("click", async () => {
+      const file = document.getElementById("csvFile").files[0];
+      if(!file){ alert("CSV 파일을 먼저 고르세요."); return; }
+      logEl.textContent = ""; summaryEl.textContent = "";
+      const rows = parseCSV(await file.text());
+      log(`총 ${rows.length}줄 읽음. 업로드 시작...\n`);
+
+      let ok = 0, fail = 0;
+      for(const cols of rows){
+        const [studentId, name, grade, classNo, studentNo, groupId, role] = cols;
+        if(!studentId || !name){ log(`건너뜀(빈 줄): ${cols.join(",")}`); fail++; continue; }
+        const email = `${studentId}@${DOMAIN}`;
+        const roleNorm = (role || "").trim().toLowerCase();   // 튼튼하게 정규화
+        try {
+          const cred = await createUserWithEmailAndPassword(secondaryAuth, email, INIT_PASSWORD);
+          await setDoc(doc(db, "users", cred.user.uid), {
+            studentId, name,
+            grade: Number(grade), classNo: Number(classNo), studentNo: Number(studentNo),
+            groupId,
+            role: roleNorm || "student",                       // 비면 일반 학생으로
+            balance: (roleNorm === "admin") ? 0 : 3,           // 관리자만 0, 나머지 3G
+            leaf: 0, tradeCount: 0,
+            mustChangePassword: true,
+            wishlist: []
+          });
+          await signOut(secondaryAuth);
+          log(`✅ ${studentId} ${name} (${roleNorm || "student"}) · 3G`);
+          ok++;
+        } catch(e){
+          if(e.code === "auth/email-already-in-use") log(`⚠️ 이미 있음: ${studentId} ${name}`);
+          else log(`❌ 실패: ${studentId} ${name} → ${e.code || e.message}`);
+          fail++;
+        }
+      }
+      summaryEl.textContent = `업로드 완료: 성공 ${ok}건 / 실패·건너뜀 ${fail}건`;
+    });
+
+    // ── ② 기본 3G 보정 (이미 만든 계정 고치기) ──────────
+    // ※ 아직 물품 등록/거래 전이라 모든 비관리자 계정을 3G로 맞춰도 안전함
+    document.getElementById("repairBtn").addEventListener("click", async () => {
+      logEl.textContent = ""; summaryEl.textContent = "";
+      log("기본 캐시 보정 시작...\n");
+      const snap = await getDocs(collection(db, "users"));
+      let fixed = 0, skipped = 0;
+      for(const d of snap.docs){
+        const u = d.data();
+        const role = (u.role || "").trim().toLowerCase();
+        if(role === "admin"){ log(`건너뜀(관리자): ${u.studentId} ${u.name}`); skipped++; continue; }
+        await updateDoc(doc(db, "users", d.id), { balance: 3 });
+        log(`💰 ${u.studentId} ${u.name} → 3G`);
+        fixed++;
+      }
+      summaryEl.textContent = `보정 완료: ${fixed}명 3G 지급 / 관리자 ${skipped}명 제외`;
+    });
+  </script>
+</body>
+</html>
