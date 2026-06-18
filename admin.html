@@ -24,7 +24,8 @@
 <body>
   <div class="admin-wrap">
     <h1>관리자 도구 (임시)</h1>
-    <p class="desc">CSV로 학생 계정을 만들고, 필요하면 기본 캐시를 보정합니다.
+    <p class="desc">CSV로 <b>익명 계정(ID·학년·반만)</b>을 만듭니다.
+       이름·출석번호 같은 개인정보는 저장하지 않아요.
        초기 비밀번호는 <b>000000</b>(0 여섯 개)입니다.</p>
 
     <div class="upload-box">
@@ -61,11 +62,11 @@
       text = text.replace(/^\uFEFF/, "");
       const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim() !== "");
       const rows = lines.map(l => l.split(",").map(c => c.trim()));
-      rows.shift();
+      rows.shift();   // 헤더 줄 버림
       return rows;
     }
 
-    // ── ① CSV 업로드 ──────────────────────────
+    // ── ① CSV 업로드 (컬럼: studentId, grade, classNo, groupId, role) ──
     document.getElementById("uploadBtn").addEventListener("click", async () => {
       const file = document.getElementById("csvFile").files[0];
       if(!file){ alert("CSV 파일을 먼저 고르세요."); return; }
@@ -75,36 +76,38 @@
 
       let ok = 0, fail = 0;
       for(const cols of rows){
-        const [studentId, name, grade, classNo, studentNo, groupId, role] = cols;
-        if(!studentId || !name){ log(`건너뜀(빈 줄): ${cols.join(",")}`); fail++; continue; }
+        const [studentId, grade, classNo, groupId, role] = cols;
+        if(!studentId){ log(`건너뜀(빈 줄): ${cols.join(",")}`); fail++; continue; }
         const email = `${studentId}@${DOMAIN}`;
-        const roleNorm = (role || "").trim().toLowerCase();   // 튼튼하게 정규화
+        const roleNorm = (role || "").trim().toLowerCase();
+        // ID에서 동물 코드만 뽑아 표시용 이름으로 사용 (실명 저장 안 함)
+        const codePart = studentId.replace(/^[0-9]+/, "");
+        const name = (roleNorm === "admin") ? "관리자" : (codePart || studentId);
         try {
           const cred = await createUserWithEmailAndPassword(secondaryAuth, email, INIT_PASSWORD);
           await setDoc(doc(db, "users", cred.user.uid), {
             studentId, name,
-            grade: Number(grade), classNo: Number(classNo), studentNo: Number(studentNo),
+            grade: Number(grade), classNo: Number(classNo),
             groupId,
-            role: roleNorm || "student",                       // 비면 일반 학생으로
-            balance: (roleNorm === "admin") ? 0 : 3,           // 관리자만 0, 나머지 3G
+            role: roleNorm || "student",
+            balance: (roleNorm === "admin") ? 0 : 3,
             leaf: 0, tradeCount: 0,
             mustChangePassword: true,
             wishlist: []
           });
           await signOut(secondaryAuth);
-          log(`✅ ${studentId} ${name} (${roleNorm || "student"}) · 3G`);
+          log(`✅ ${studentId} (${roleNorm || "student"}) · 3G`);
           ok++;
         } catch(e){
-          if(e.code === "auth/email-already-in-use") log(`⚠️ 이미 있음: ${studentId} ${name}`);
-          else log(`❌ 실패: ${studentId} ${name} → ${e.code || e.message}`);
+          if(e.code === "auth/email-already-in-use") log(`⚠️ 이미 있음: ${studentId}`);
+          else log(`❌ 실패: ${studentId} → ${e.code || e.message}`);
           fail++;
         }
       }
       summaryEl.textContent = `업로드 완료: 성공 ${ok}건 / 실패·건너뜀 ${fail}건`;
     });
 
-    // ── ② 기본 3G 보정 (이미 만든 계정 고치기) ──────────
-    // ※ 아직 물품 등록/거래 전이라 모든 비관리자 계정을 3G로 맞춰도 안전함
+    // ── ② 기본 3G 보정 (이미 만든 비관리자 계정을 3G로) ──
     document.getElementById("repairBtn").addEventListener("click", async () => {
       logEl.textContent = ""; summaryEl.textContent = "";
       log("기본 캐시 보정 시작...\n");
@@ -113,9 +116,9 @@
       for(const d of snap.docs){
         const u = d.data();
         const role = (u.role || "").trim().toLowerCase();
-        if(role === "admin"){ log(`건너뜀(관리자): ${u.studentId} ${u.name}`); skipped++; continue; }
+        if(role === "admin"){ log(`건너뜀(관리자): ${u.studentId}`); skipped++; continue; }
         await updateDoc(doc(db, "users", d.id), { balance: 3 });
-        log(`💰 ${u.studentId} ${u.name} → 3G`);
+        log(`💰 ${u.studentId} → 3G`);
         fixed++;
       }
       summaryEl.textContent = `보정 완료: ${fixed}명 3G 지급 / 관리자 ${skipped}명 제외`;

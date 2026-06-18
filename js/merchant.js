@@ -38,10 +38,10 @@ $("saleForm").addEventListener("submit", async (e) => {
   $("message").textContent = "";
 
   const itemNo = $("itemNo").value.trim();
-  const buyerId = $("buyerId").value.trim();
+  const buyerId = $("buyerId").value.trim().toLowerCase();
   const price = Number($("price").value);
 
-  if(!itemNo || !buyerId){ $("message").textContent = "물품번호와 구매자 학번을 입력하세요."; return; }
+  if(!itemNo || !buyerId){ $("message").textContent = "물품번호와 구매자 ID를 입력하세요."; return; }
   if(!Number.isInteger(price) || price < 0 || price > 3){ $("message").textContent = "실거래가는 0~3 사이 정수여야 해요."; return; }
 
   const itemSnap = await getDocs(query(collection(db, "items"), where("itemNo", "==", itemNo)));
@@ -55,7 +55,7 @@ $("saleForm").addEventListener("submit", async (e) => {
   }
 
   const buyerSnap = await getDocs(query(collection(db, "users"), where("studentId", "==", buyerId)));
-  if(buyerSnap.empty){ $("message").textContent = "구매자 학번을 찾을 수 없어요."; return; }
+  if(buyerSnap.empty){ $("message").textContent = "구매자 ID를 찾을 수 없어요."; return; }
   const buyerRef = buyerSnap.docs[0].ref;
   const sellerRef = doc(db, "users", itemData.sellerUid);
 

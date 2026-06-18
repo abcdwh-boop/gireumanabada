@@ -17,8 +17,8 @@
 
     <form id="loginForm" class="login-form">
       <label>
-        <span>학번</span>
-        <input type="text" id="studentId" placeholder="예: 2630915" autocomplete="off" required>
+        <span>ID</span>
+        <input type="text" id="studentId" placeholder="예: 309lion" autocomplete="off" required>
       </label>
 
       <label>
@@ -47,7 +47,7 @@
       msg.textContent = "";
       const studentId = document.getElementById("studentId").value.trim();
       const password  = document.getElementById("password").value;
-      if(!studentId || !password){ msg.textContent = "학번과 비밀번호를 입력하세요."; return; }
+      if(!studentId || !password){ msg.textContent = "ID와 비밀번호를 입력하세요."; return; }
 
       try {
         const { profile } = await loginWithStudentId(studentId, password);
@@ -59,9 +59,9 @@
       } catch(err){
         const code = err.code || "";
         if(["auth/invalid-credential","auth/wrong-password","auth/user-not-found"].includes(code))
-          msg.textContent = "학번 또는 비밀번호가 올바르지 않습니다.";
+          msg.textContent = "ID 또는 비밀번호가 올바르지 않습니다.";
         else if(code === "auth/invalid-email")
-          msg.textContent = "학번 형식이 올바르지 않습니다.";
+          msg.textContent = "ID 형식이 올바르지 않습니다.";
         else
           msg.textContent = "로그인 오류: " + (err.code || err.message);
       }

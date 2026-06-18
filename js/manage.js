@@ -30,12 +30,12 @@ onAuthStateChanged(auth, async (user) => {
 
 // ── 역할 지정 ──
 async function changeRole(){
-  const sid = $("roleSid").value.trim();
+  const sid = $("roleSid").value.trim().toLowerCase();
   const role = $("roleSel").value;
   $("roleMsg").style.color = "#c53030";
-  if(!sid){ $("roleMsg").textContent = "학번을 입력하세요."; return; }
+  if(!sid){ $("roleMsg").textContent = "ID를 입력하세요."; return; }
   const snap = await getDocs(query(collection(db, "users"), where("studentId", "==", sid)));
-  if(snap.empty){ $("roleMsg").textContent = "그 학번을 찾을 수 없어요."; return; }
+  if(snap.empty){ $("roleMsg").textContent = "그 ID를 찾을 수 없어요."; return; }
   try {
     await updateDoc(snap.docs[0].ref, { role });
     $("roleMsg").style.color = "#2d5f3f";
