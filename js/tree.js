@@ -1,5 +1,5 @@
 // ============================================
-// 학급별 나무 (전자칠판용) — 재귀 가지 + 랜덤 잎
+// 학급별 나무 (전자칠판용) — 재귀 가지 + 옆구리 랜덤 잎
 // ============================================
 import { db } from './firebase-config.js';
 import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -8,8 +8,8 @@ const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 const pad2 = (n) => String(n).padStart(2, "0");
 
-const LEAVES_CAP = 100;   // 가득 찬 나무
-const LEAF_PER   = 5;     // 5리프당 잎 1장
+const LEAVES_CAP = 250;   // 가득 찬 나무 (250장)
+const LEAF_PER   = 2;     // 2리프당 잎 1장
 const POINT_COLORS = ["#e6b800", "#e0902a", "#d4582a", "#cc3f6a", "#a96bd6"];
 
 let leafDefs = [];
@@ -20,7 +20,6 @@ function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t
 function hashStr(s){ let h = 2166136261; for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-// 반마다 고정된 나무(가지 + 잎 자리/색) 생성
 function buildTree(classKey){
   const rng = mulberry32(hashStr(classKey) ^ 0x9e3779b9);
 
@@ -31,7 +30,7 @@ function buildTree(classKey){
     const y2 = y - Math.cos(ang) * len;
     segs.push({ x1: x, y1: y, x2, y2, w });
     if(depth <= 0 || w < 2.6) return;
-    if(depth <= 1 && rng() < 0.08) return;           // 가끔 일찍 멈춤 → 들쭉날쭉
+    if(depth <= 1 && rng() < 0.08) return;
     const r = rng();
     const kids = depth >= 4 ? 2 : (r < 0.10 ? 1 : (r < 0.90 ? 2 : 3));
     const spread = 0.30 + rng() * 0.32;
@@ -44,26 +43,31 @@ function buildTree(classKey){
   }
   grow(500, 675, 0, 152, 34, 5);
 
-  // 2) 잎 자리: 가는 가지 위 아무 데나 (끝뿐 아니라 중간도)
+  // 2) 잎 자리: 가는 가지 위 여러 곳 + 가지 '옆구리'에 부착
   const spots = [];
   for(const s of segs){
-    if(s.w < 12){
-      const n = s.w < 6 ? 3 : 2;
+    if(s.w < 15){
+      const n = s.w < 5 ? 7 : (s.w < 9 ? 5 : 3);   // 잎 자리 대폭 증가 (250장까지)
       const a = Math.atan2(s.x2 - s.x1, -(s.y2 - s.y1));
+      const perp = a + Math.PI / 2;
       for(let i = 0; i < n; i++){
-        const t = 0.1 + rng() * 0.9;
-        spots.push({ x: s.x1 + (s.x2 - s.x1) * t, y: s.y1 + (s.y2 - s.y1) * t, a });
+        const t = 0.08 + rng() * 0.92;             // 끝뿐 아니라 중간에도
+        const bx = s.x1 + (s.x2 - s.x1) * t, by = s.y1 + (s.y2 - s.y1) * t;
+        const side = rng() < 0.5 ? 1 : -1;          // 좌/우 옆구리
+        const off = s.w * 0.5;
+        spots.push({ x: bx + Math.sin(perp) * off * side, y: by - Math.cos(perp) * off * side, a, side });
       }
     }
   }
   for(let i = spots.length - 1; i > 0; i--){ const j = Math.floor(rng() * (i + 1)); [spots[i], spots[j]] = [spots[j], spots[i]]; }
 
-  // 3) 잎 정의 (최대 100)
+  // 3) 잎 정의 (최대 150, 더 크게, 옆으로 펼침)
   const defs = [];
   for(let i = 0; i < Math.min(LEAVES_CAP, spots.length); i++){
     const sp = spots[i];
-    const rot = sp.a * 180 / Math.PI + (rng() - 0.5) * 100;
-    const scale = 1.4 + rng() * 0.8;                  // 면적 ↑
+    const rotRad = sp.a + sp.side * (0.9 + rng() * 0.6) + (rng() - 0.5) * 0.5;   // 가지에서 옆으로 뻗음
+    const rot = rotRad * 180 / Math.PI;
+    const scale = 1.6 + rng() * 0.9;               // 더 큰 잎
     let color;
     if(rng() < 0.12) color = POINT_COLORS[Math.floor(rng() * POINT_COLORS.length)];
     else { const h = 80 + rng() * 60, s = 48 + rng() * 22, l = 30 + rng() * 20; color = `hsl(${h.toFixed(0)} ${s.toFixed(0)}% ${l.toFixed(0)}%)`; }
