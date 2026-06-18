@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>테스트 데이터 생성 (임시)</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color:#222; }
+  h1 { font-size: 20px; }
+  .card { border:1px solid #ddd; border-radius:12px; padding:16px; margin:16px 0; }
+  .card h2 { font-size:16px; margin:0 0 8px; }
+  label { display:block; font-size:14px; margin:8px 0 4px; }
+  input { width:100%; padding:8px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box; font-size:14px; }
+  button { background:#2e7d32; color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:14px; cursor:pointer; margin-top:10px; }
+  button.danger { background:#c62828; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  #log { background:#0f172a; color:#d1fae5; font-size:13px; padding:12px; border-radius:8px; height:180px; overflow:auto; white-space:pre-wrap; margin-top:16px; }
+  .who { font-size:13px; color:#555; }
+  .hint { font-size:12px; color:#777; margin-top:4px; }
+</style>
+</head>
+<body>
+  <h1>🧪 테스트 데이터 생성기 (임시 도구)</h1>
+  <p class="who" id="who">로그인 확인 중…</p>
+
+  <div class="card">
+    <h2>① 테스트 물품 만들기</h2>
+    <label>만들 개수</label>
+    <input id="count" type="number" value="40" min="1" max="200">
+    <p class="hint">8개 카테고리에 골고루, A·B마켓 반반으로 생성됩니다. 모두 'isTest' 표시가 붙어 ③번으로 한 번에 지울 수 있어요.</p>
+    <button id="makeItems">테스트 물품 생성</button>
+  </div>
+
+  <div class="card">
+    <h2>② 테스트 나무 리프값 설정</h2>
+    <label>반 (예: 3-09)</label>
+    <input id="treeClass" type="text" value="3-09" placeholder="3-09">
+    <label>리프 총량 (leafTotal)</label>
+    <input id="treeLeaf" type="number" value="120" min="0">
+    <p class="hint">tree.html에서 잎 개수·상한을 눈으로 확인할 때 씁니다. 값을 바꿔가며 나무 모양을 조정하세요.</p>
+    <button id="setTree">리프값 설정</button>
+  </div>
+
+  <div class="card">
+    <h2>③ 테스트 데이터 전부 삭제</h2>
+    <p class="hint">isTest 표시된 테스트 물품을 모두 지우고, 테스트 리프값은 0으로 되돌립니다. 실제 학생 데이터는 건드리지 않습니다.</p>
+    <button id="cleanup" class="danger">테스트 데이터 전부 삭제</button>
+  </div>
+
+  <div id="log">준비됨.</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, doc, getDoc, setDoc, addDoc, getDocs, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { firebaseConfig } from "./js/firebase-config.js";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const logEl = document.getElementById("log");
+  const log = (m) => { logEl.textContent += "\n" + m; logEl.scrollTop = logEl.scrollHeight; };
+
+  let me = null, myUid = null;
+
+  const DEFAULT_CATS = [
+    {name:"의류·신발", leaf:5},{name:"가방류", leaf:5},{name:"도서·지류", leaf:5},
+    {name:"생활용품", leaf:7},{name:"장난감·인형", leaf:3},{name:"가전·배터리", leaf:10},
+    {name:"보드게임류", leaf:4},{name:"학용품·문구류", leaf:3}
+  ];
+
+  onAuthStateChanged(auth, async (user) => {
+    const btns = document.querySelectorAll("button");
+    if (!user) {
+      document.getElementById("who").textContent = "⚠️ 로그인 안 됨. 같은 브라우저에서 관리자(2600001)로 먼저 로그인한 뒤 이 페이지를 여세요.";
+      btns.forEach(b => b.disabled = true);
+      return;
+    }
+    myUid = user.uid;
+    try { const s = await getDoc(doc(db, "users", user.uid)); me = s.exists() ? s.data() : {}; }
+    catch(e){ me = {}; }
+    document.getElementById("who").textContent =
+      `로그인됨: ${me.name || "?"} (학번 ${me.studentId || "?"}, 권한 ${me.role || "?"})`;
+    if (me.role !== "admin") log("⚠️ 관리자 계정이 아니면 보안 규칙에 막힐 수 있어요. 2600001로 로그인 권장.");
+  });
+
+  async function getCategories(){
+    try {
+      const s = await getDoc(doc(db, "config", "footprintTable"));
+      const arr = s.exists() && Array.isArray(s.data().categories) ? s.data().categories : null;
+      if (arr && arr.length) return arr;
+    } catch(e){}
+    return DEFAULT_CATS;
+  }
+
+  // ① 물품 생성
+  document.getElementById("makeItems").addEventListener("click", async () => {
+    const btn = document.getElementById("makeItems");
+    const n = Math.max(1, Math.min(200, parseInt(document.getElementById("count").value || "40", 10)));
+    btn.disabled = true;
+    try {
+      const cats = await getCategories();
+      log(`물품 ${n}개 생성 시작… (카테고리 ${cats.length}종)`);
+      for (let i = 1; i <= n; i++) {
+        const c = cats[(i-1) % cats.length];
+        const market = (i % 2 === 0) ? "A" : "B";
+        const nn = String(i).padStart(2, "0");
+        await addDoc(collection(db, "items"), {
+          itemNo: `9-99-${nn}`,            // 9-99 = 테스트 전용 (실제 채번 안 건드림)
+          sellerUid: myUid,                // 보안 규칙 통과용 (실제 내 uid)
+          sellerStudentId: "9999999",
+          groupId: "G7",
+          grade: 9, classNo: 99,
+          category: c.name,
+          name: `테스트물품 ${nn} (${c.name})`,
+          usage: "테스트용 가상 데이터", period: "1년 미만", condition: "상",
+          story: "테스트 자동 생성 물품입니다.",
+          price: (i % 4),                  // 0~3
+          leafValue: c.leaf ?? 5,
+          market: market,
+          status: "registered",
+          checklistPassed: true,
+          isTest: true,
+          createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+        });
+        if (i % 10 === 0) log(`  …${i}개 완료`);
+      }
+      log(`✅ 물품 ${n}개 생성 완료! 앱 시장 화면을 새로고침해 보세요.`);
+    } catch(e){
+      log("❌ 오류: " + (e.message || e));
+      log("   (보안 규칙에 막혔다면 관리자로 로그인했는지 확인하거나 알려주세요.)");
+    } finally { btn.disabled = false; }
+  });
+
+  // ② 나무 리프값 설정
+  document.getElementById("setTree").addEventListener("click", async () => {
+    const btn = document.getElementById("setTree");
+    const key = (document.getElementById("treeClass").value || "").trim();
+    const leaf = parseInt(document.getElementById("treeLeaf").value || "0", 10);
+    if (!/^\d-\d{2}$/.test(key)) { log("⚠️ 반 형식은 3-09 처럼 입력하세요."); return; }
+    btn.disabled = true;
+    try {
+      const [g, cls] = key.split("-");
+      await setDoc(doc(db, "classStats", key),
+        { leafTotal: leaf, grade: parseInt(g,10), classNo: parseInt(cls,10), isTest: true },
+        { merge: true });
+      log(`✅ classStats/${key}.leafTotal = ${leaf} 설정 완료. tree.html에서 ${key} 선택해 확인하세요.`);
+    } catch(e){ log("❌ 오류: " + (e.message || e)); }
+    finally { btn.disabled = false; }
+  });
+
+  // ③ 테스트 데이터 삭제
+  document.getElementById("cleanup").addEventListener("click", async () => {
+    if (!confirm("isTest 표시된 테스트 물품을 모두 지우고 테스트 리프값을 0으로 되돌립니다. 진행할까요?")) return;
+    const btn = document.getElementById("cleanup");
+    btn.disabled = true;
+    try {
+      log("테스트 물품 삭제 중…");
+      const itemSnap = await getDocs(query(collection(db,"items"), where("isTest","==",true)));
+      let n = 0;
+      for (const d of itemSnap.docs){ await deleteDoc(d.ref); n++; }
+      log(`  물품 ${n}개 삭제`);
+
+      log("테스트 리프값 0으로 초기화 중…");
+      const csSnap = await getDocs(query(collection(db,"classStats"), where("isTest","==",true)));
+      let m = 0;
+      for (const d of csSnap.docs){ await setDoc(d.ref, { leafTotal: 0, isTest: false }, { merge:true }); m++; }
+      log(`  리프값 ${m}개 초기화(0)`);
+
+      log("✅ 테스트 데이터 정리 완료.");
+    } catch(e){ log("❌ 오류: " + (e.message || e)); }
+    finally { btn.disabled = false; }
+  });
+</script>
+</body>
+</html>
