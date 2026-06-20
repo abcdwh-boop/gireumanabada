@@ -37,14 +37,26 @@
     <input id="treeClass" type="text" value="3-09" placeholder="3-09">
     <label>리프 총량 (leafTotal)</label>
     <input id="treeLeaf" type="number" value="120" min="0">
-    <p class="hint">tree.html에서 잎 개수·상한을 눈으로 확인할 때 씁니다. 값을 바꿔가며 나무 모양을 조정하세요.</p>
+    <p class="hint">tree.html에서 잎 개수·상한을 눈으로 확인할 때 씁니다.
+       ⚠️ <b>실제 운영할 반에는 쓰지 마세요.</b> 이 버튼으로 값을 넣으면 그 반 classStats가 '테스트'로 표시돼,
+       ③ 삭제 시 0으로 초기화됩니다(실제 거래분도 함께 사라짐).</p>
     <button id="setTree">리프값 설정</button>
   </div>
 
   <div class="card">
     <h2>③ 테스트 데이터 전부 삭제</h2>
-    <p class="hint">isTest 표시된 테스트 물품을 모두 지우고, 테스트 리프값은 0으로 되돌립니다. 실제 학생 데이터는 건드리지 않습니다.</p>
+    <p class="hint">isTest 표시된 테스트 물품을 모두 지우고, 테스트 리프값은 0으로 되돌립니다. 실제 학생 데이터(잔액·개인 리프)는 건드리지 않습니다.</p>
     <button id="cleanup" class="danger">테스트 데이터 전부 삭제</button>
+  </div>
+
+  <div class="card">
+    <h2>④ 전체 초기화 (행사 전 클린)</h2>
+    <p class="hint">모든 학생을 <b>잔액 3G · 리프 0 · 거래 0 · 찜 비움</b>으로, 그리고 모든 classStats를 <b>0</b>으로 맞춥니다.
+       개인 리프와 반 나무가 0에서 같이 시작하게 돼요. <b>행사 직전에 한 번</b> 누르세요. (관리자 잔액은 0)</p>
+    <label style="display:flex; align-items:center; gap:6px; font-size:14px; margin-top:8px;">
+      <input type="checkbox" id="alsoItems" style="width:auto;"> 물품(items)도 전부 삭제 — 학생들이 당일 새로 등록
+    </label>
+    <button id="fullReset" class="danger">전체 초기화 실행</button>
   </div>
 
   <div id="log">준비됨.</div>
@@ -52,7 +64,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, doc, getDoc, setDoc, addDoc, getDocs, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, getDocs, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import { firebaseConfig } from "./js/firebase-config.js";
 
   const app = initializeApp(firebaseConfig);
@@ -73,7 +85,7 @@
   onAuthStateChanged(auth, async (user) => {
     const btns = document.querySelectorAll("button");
     if (!user) {
-      document.getElementById("who").textContent = "⚠️ 로그인 안 됨. 같은 브라우저에서 관리자(2600001)로 먼저 로그인한 뒤 이 페이지를 여세요.";
+      document.getElementById("who").textContent = "⚠️ 로그인 안 됨. 같은 브라우저에서 관리자(admin01)로 먼저 로그인한 뒤 이 페이지를 여세요.";
       btns.forEach(b => b.disabled = true);
       return;
     }
@@ -81,8 +93,8 @@
     try { const s = await getDoc(doc(db, "users", user.uid)); me = s.exists() ? s.data() : {}; }
     catch(e){ me = {}; }
     document.getElementById("who").textContent =
-      `로그인됨: ${me.name || "?"} (학번 ${me.studentId || "?"}, 권한 ${me.role || "?"})`;
-    if (me.role !== "admin") log("⚠️ 관리자 계정이 아니면 보안 규칙에 막힐 수 있어요. 2600001로 로그인 권장.");
+      `로그인됨: ${me.name || "?"} (ID ${me.studentId || "?"}, 권한 ${me.role || "?"})`;
+    if (me.role !== "admin") log("⚠️ 관리자 계정이 아니면 보안 규칙에 막힐 수 있어요. admin01로 로그인 권장.");
   });
 
   async function getCategories(){
@@ -169,6 +181,52 @@
       log(`  리프값 ${m}개 초기화(0)`);
 
       log("✅ 테스트 데이터 정리 완료.");
+    } catch(e){ log("❌ 오류: " + (e.message || e)); }
+    finally { btn.disabled = false; }
+  });
+
+  // ④ 전체 초기화 (행사 전 클린)
+  document.getElementById("fullReset").addEventListener("click", async () => {
+    const delItems = document.getElementById("alsoItems").checked;
+    const msg = delItems
+      ? "모든 학생 리프·거래·잔액을 초기화하고, classStats를 0으로, 물품(items)도 전부 삭제합니다.\n되돌릴 수 없어요. 진행할까요?"
+      : "모든 학생 리프·거래·잔액을 초기화하고, classStats를 0으로 만듭니다. (물품 유지)\n진행할까요?";
+    if (!confirm(msg)) return;
+    const btn = document.getElementById("fullReset");
+    btn.disabled = true;
+    try {
+      // 1) 사용자 초기화
+      log("사용자 초기화 중…");
+      const usnap = await getDocs(collection(db, "users"));
+      let u = 0;
+      for (const d of usnap.docs){
+        const role = (d.data().role || "").trim().toLowerCase();
+        await updateDoc(d.ref, {
+          balance: (role === "admin") ? 0 : 3,
+          leaf: 0, tradeCount: 0, wishlist: []
+        });
+        u++;
+        if (u % 50 === 0) log(`  …${u}명`);
+      }
+      log(`  사용자 ${u}명 초기화 (잔액 3G·리프 0·거래 0·찜 비움)`);
+
+      // 2) classStats 전부 0
+      log("classStats 0으로…");
+      const csnap = await getDocs(collection(db, "classStats"));
+      let c = 0;
+      for (const d of csnap.docs){ await setDoc(d.ref, { leafTotal: 0, isTest: false }, { merge:true }); c++; }
+      log(`  classStats ${c}개 0`);
+
+      // 3) (선택) 물품 삭제
+      if (delItems){
+        log("물품 삭제 중…");
+        const isnap = await getDocs(collection(db, "items"));
+        let it = 0;
+        for (const d of isnap.docs){ await deleteDoc(d.ref); it++; if (it % 50 === 0) log(`  …${it}개`); }
+        log(`  물품 ${it}개 삭제`);
+      }
+
+      log("✅ 전체 초기화 완료. 행사 시작 상태(잔액 3G·리프 0·나무 0)예요.");
     } catch(e){ log("❌ 오류: " + (e.message || e)); }
     finally { btn.disabled = false; }
   });

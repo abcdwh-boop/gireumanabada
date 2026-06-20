@@ -9,7 +9,7 @@ import { doc, getDoc, updateDoc }
 
 const DOMAIN = "gireum.sen.ms.kr";
 
-// 학번 + 비번으로 로그인. 성공하면 Firestore 사용자 정보도 같이 읽어 돌려줌
+// ID + 비번으로 로그인. 성공하면 Firestore 사용자 정보도 같이 읽어 돌려줌
 export async function loginWithStudentId(studentId, password){
   const email = `${studentId}@${DOMAIN}`;
   const cred = await signInWithEmailAndPassword(auth, email, password);

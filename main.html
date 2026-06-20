@@ -79,7 +79,7 @@
         if(!snap.exists()){ document.getElementById("greeting").textContent = "사용자 정보를 찾을 수 없습니다."; return; }
         const p = snap.data();
         document.getElementById("greeting").textContent =
-          `${p.name} (${p.studentId}) · ${ROLE_KO[p.role] || p.role}`;
+          `${p.studentId} · ${ROLE_KO[p.role] || p.role}`;
         document.getElementById("balance").textContent = p.balance ?? 0;
         document.getElementById("leaf").textContent    = p.leaf ?? 0;
         document.getElementById("tx").textContent      = p.tradeCount ?? 0;

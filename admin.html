@@ -26,7 +26,7 @@
     <h1>관리자 도구 (임시)</h1>
     <p class="desc">CSV로 <b>익명 계정(ID·학년·반만)</b>을 만듭니다.
        이름·출석번호 같은 개인정보는 저장하지 않아요.
-       초기 비밀번호는 <b>000000</b>(0 여섯 개)입니다.</p>
+       초기 비밀번호는 <b>000000</b>입니다. 많은 인원은 천천히 만들며, 멈추면 다시 ①을 누르면 이어서 됩니다.</p>
 
     <div class="upload-box">
       <input type="file" id="csvFile" accept=".csv,text/csv">
@@ -50,6 +50,9 @@
 
     const DOMAIN = "gireum.sen.ms.kr";
     const INIT_PASSWORD = "000000";
+    const DELAY_MS = 350;          // 계정 사이 간격
+    const MAX_RETRY = 3;           // 한도 걸렸을 때 재시도 횟수
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
     const secondaryApp  = initializeApp(firebaseConfig, "Uploader");
     const secondaryAuth = getAuth(secondaryApp);
@@ -72,42 +75,67 @@
       if(!file){ alert("CSV 파일을 먼저 고르세요."); return; }
       logEl.textContent = ""; summaryEl.textContent = "";
       const rows = parseCSV(await file.text());
-      log(`총 ${rows.length}줄 읽음. 업로드 시작...\n`);
+      log(`총 ${rows.length}줄 읽음.`);
 
-      let ok = 0, fail = 0;
-      for(const cols of rows){
-        const [studentId, grade, classNo, groupId, role] = cols;
-        if(!studentId){ log(`건너뜀(빈 줄): ${cols.join(",")}`); fail++; continue; }
+      // 이미 만들어진 ID 미리 확인 → 재실행 시 그건 건너뜀(한도 절약)
+      log("기존 계정 확인 중…");
+      const existing = new Set();
+      try {
+        const usnap = await getDocs(collection(db, "users"));
+        usnap.forEach(d => { const s = d.data().studentId; if(s) existing.add(String(s).toLowerCase()); });
+        log(`이미 ${existing.size}개 있음 → 그건 건너뜀.\n`);
+      } catch(e){ log(`(기존 확인 실패: ${e.code || e.message} — 그냥 진행)\n`); }
+
+      let ok = 0, skip = 0, fail = 0;
+      for(let i = 0; i < rows.length; i++){
+        const [studentId, grade, classNo, groupId, role] = rows[i];
+        if(!studentId){ skip++; continue; }
+        if(existing.has(studentId.toLowerCase())){ skip++; continue; }   // 이미 있음
+
         const email = `${studentId}@${DOMAIN}`;
         const roleNorm = (role || "").trim().toLowerCase();
-        // ID에서 동물 코드만 뽑아 표시용 이름으로 사용 (실명 저장 안 함)
         const codePart = studentId.replace(/^[0-9]+/, "");
         const name = (roleNorm === "admin") ? "관리자" : (codePart || studentId);
-        try {
-          const cred = await createUserWithEmailAndPassword(secondaryAuth, email, INIT_PASSWORD);
-          await setDoc(doc(db, "users", cred.user.uid), {
-            studentId, name,
-            grade: Number(grade), classNo: Number(classNo),
-            groupId,
-            role: roleNorm || "student",
-            balance: (roleNorm === "admin") ? 0 : 3,
-            leaf: 0, tradeCount: 0,
-            mustChangePassword: true,
-            wishlist: []
-          });
-          await signOut(secondaryAuth);
-          log(`✅ ${studentId} (${roleNorm || "student"}) · 3G`);
-          ok++;
-        } catch(e){
-          if(e.code === "auth/email-already-in-use") log(`⚠️ 이미 있음: ${studentId}`);
-          else log(`❌ 실패: ${studentId} → ${e.code || e.message}`);
-          fail++;
+
+        let attempt = 0, done = false;
+        while(!done){
+          try {
+            const cred = await createUserWithEmailAndPassword(secondaryAuth, email, INIT_PASSWORD);
+            await setDoc(doc(db, "users", cred.user.uid), {
+              studentId, name,
+              grade: Number(grade), classNo: Number(classNo),
+              groupId,
+              role: roleNorm || "student",
+              balance: (roleNorm === "admin") ? 0 : 3,
+              leaf: 0, tradeCount: 0,
+              mustChangePassword: true,
+              wishlist: []
+            });
+            await signOut(secondaryAuth);
+            log(`✅ ${studentId} (${roleNorm || "student"})`);
+            ok++; done = true;
+          } catch(e){
+            if(e.code === "auth/email-already-in-use"){ log(`⚠️ 이미 있음: ${studentId}`); skip++; done = true; }
+            else if(e.code === "auth/too-many-requests"){
+              attempt++;
+              if(attempt > MAX_RETRY){
+                log(`\n🛑 요청 한도에 막혔어요. 여기까지 저장됨.`);
+                summaryEl.textContent = `중단: 성공 ${ok} / 건너뜀 ${skip}. 30~60분 뒤 다시 ①을 누르면 남은 것부터 이어서 만듭니다.`;
+                return;
+              }
+              const wait = 60 * attempt;   // 60s, 120s, 180s
+              log(`⏳ 한도 — ${wait}초 쉬고 재시도 (${attempt}/${MAX_RETRY})`);
+              await sleep(wait * 1000);
+            }
+            else { log(`❌ 실패: ${studentId} → ${e.code || e.message}`); fail++; done = true; }
+          }
         }
+        await sleep(DELAY_MS);
       }
-      summaryEl.textContent = `업로드 완료: 성공 ${ok}건 / 실패·건너뜀 ${fail}건`;
+      summaryEl.textContent = `완료: 성공 ${ok} / 건너뜀 ${skip} / 실패 ${fail}`;
     });
 
-    // ── ② 기본 3G 보정 (이미 만든 비관리자 계정을 3G로) ──
+    // ── ② 기본 3G 보정 ──
     document.getElementById("repairBtn").addEventListener("click", async () => {
       logEl.textContent = ""; summaryEl.textContent = "";
       log("기본 캐시 보정 시작...\n");
@@ -116,9 +144,8 @@
       for(const d of snap.docs){
         const u = d.data();
         const role = (u.role || "").trim().toLowerCase();
-        if(role === "admin"){ log(`건너뜀(관리자): ${u.studentId}`); skipped++; continue; }
+        if(role === "admin"){ skipped++; continue; }
         await updateDoc(doc(db, "users", d.id), { balance: 3 });
-        log(`💰 ${u.studentId} → 3G`);
         fixed++;
       }
       summaryEl.textContent = `보정 완료: ${fixed}명 3G 지급 / 관리자 ${skipped}명 제외`;

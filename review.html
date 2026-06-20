@@ -12,7 +12,7 @@
       <button class="back-link" onclick="location.href='main.html'">← 메인으로</button>
     </div>
     <div class="page-title">구매 후기</div>
-    <p class="greeting">산 물건이 어땠는지 후기를 남겨주세요. 학번은 자동으로 채워집니다.</p>
+    <p class="greeting">산 물건이 어땠는지 후기를 남겨주세요. 폼에서 본인 학번과 이름을 직접 입력하면 됩니다.</p>
 
     <div id="studentBox" style="margin-top:16px;">불러오는 중…</div>
 
@@ -21,13 +21,10 @@
       <div class="page-title" style="font-size:16px;">후기 폼 설정 (관리자)</div>
       <label class="field"><span>구글폼 주소 (viewform)</span>
         <input type="text" id="formUrl" placeholder="https://docs.google.com/forms/d/e/.../viewform"></label>
-      <label class="field"><span>학번 칸 entry 번호</span>
-        <input type="text" id="entryId" placeholder="예: 123456789"></label>
       <button id="saveForm" class="btn-primary btn-block">폼 설정 저장</button>
       <p id="adminMsg" class="message"></p>
       <p class="greeting" style="font-size:12px; line-height:1.5;">
-        구글폼 → 우상단 ⋮ → <b>사전 입력된 링크 가져오기</b> → 학번 칸에 아무 값이나 입력하고 링크 생성 →
-        만들어진 링크에서 <b>entry.</b> 뒤의 숫자가 entry 번호예요. 주소는 <b>?</b> 앞부분만 넣어도 됩니다.
+        구글폼의 <b>보내기 → 링크(🔗)</b> 주소를 그대로 붙여넣으면 돼요. 학생은 폼에서 본인 학번·이름을 직접 입력합니다.
       </p>
     </div>
   </main>

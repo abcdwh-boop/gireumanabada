@@ -48,6 +48,24 @@ async function loadPhase(){
     "closed": "마켓 마감",
   };
   $("notice").textContent = map[phase] || "";
+  setBanner();
+}
+
+// 상단 A/B 마켓 배너 (A·B 진행 중일 때만 색 배너 표시)
+function setBanner(){
+  const el = $("marketBanner");
+  if(!el) return;
+  if(phase === "A-open"){
+    el.textContent = "🅰️ A마켓 진행 중";
+    el.style.background = "#0f8a7e";   // A: 청록
+    el.style.display = "block";
+  } else if(phase === "B-open"){
+    el.textContent = "🅱️ B마켓 진행 중";
+    el.style.background = "#e07a2c";   // B: 주황
+    el.style.display = "block";
+  } else {
+    el.style.display = "none";         // 시작 전·마감은 배너 숨김(아래 안내문만)
+  }
 }
 
 async function loadCategories(){
