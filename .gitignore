@@ -1,3 +1,4 @@
 node_modules/
 bulk-users/serviceAccount*.json
 bulk-users/students.csv
+~$*

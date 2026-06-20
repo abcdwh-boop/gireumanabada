@@ -12,7 +12,7 @@
   <main class="login-screen">
     <header class="login-header">
       <h1>길음중<br>아나바다</h1>
-      <p class="subtitle">길음장터에 오신 것을 환영합니다</p>
+      <p class="subtitle">길음중 아나바다장터에 오신 것을 환영합니다</p>
     </header>
 
     <form id="loginForm" class="login-form">
@@ -23,7 +23,12 @@
 
       <label>
         <span>비밀번호</span>
-        <input type="password" id="password" placeholder="처음이라면 000000" required>
+        <div class="pw-wrap">
+          <input type="password" id="password" placeholder="처음이라면 000000" required>
+          <button type="button" id="togglePw" class="pw-toggle" aria-label="비밀번호 표시">
+            <span class="material-symbols-rounded">visibility</span>
+          </button>
+        </div>
       </label>
 
       <button type="submit" class="btn-primary">로그인</button>
@@ -32,7 +37,7 @@
     </form>
 
     <footer class="login-footer">
-      <small>비밀번호는 학교 구글 계정과 무관합니다.</small>
+      <small>※아나바다 앱에서는 개인정보를 일절 수집하지 않습니다. <br><br>비밀번호를 잊어버리면 재설정이 불가하므로<br>기억하기 쉬운 번호로 설정하세요. </small>
     </footer>
   </main>
 
@@ -73,6 +78,21 @@
         navigator.serviceWorker.register("service-worker.js").catch(() => {})
       );
     }
+  </script>
+  <script>
+    (function(){
+      const pw  = document.getElementById("password");
+      const btn = document.getElementById("togglePw");
+      if(pw && btn){
+        btn.addEventListener("click", () => {
+          const show = pw.type === "password";
+          pw.type = show ? "text" : "password";
+          btn.querySelector(".material-symbols-rounded").textContent =
+            show ? "visibility_off" : "visibility";
+          btn.setAttribute("aria-label", show ? "비밀번호 숨기기" : "비밀번호 표시");
+        });
+      }
+    })();
   </script>
 </body>
 </html>

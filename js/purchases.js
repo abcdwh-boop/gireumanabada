@@ -34,5 +34,6 @@ async function loadPurchases(){
       <div class="row1"><span class="nm">${it.name}</span><span class="badge sold">구매완료</span></div>
       <div class="ino">${it.itemNo} · ${it.category}</div>
       <div class="meta">${it.soldPrice ?? it.price}G · +${it.leafValue} 리프</div>
+      ${it.story ? `<div class="story">${it.story}</div>` : ""}
     </div>`).join("");
 }

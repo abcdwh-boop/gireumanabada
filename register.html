@@ -12,34 +12,35 @@
       <button class="back-link" onclick="location.href='main.html'">← 메인으로</button>
     </div>
     <div class="page-title">물품 등록</div>
+    <p class="reg-desc">* 물품 등록 후 '물품번호'를 메모하여 물품에 붙여주세요. <br>* 자잘한 학용품류는 여러개 묶어서 하나의 물품으로 등록해주세요.<br>* 물품 소개시 나를 식별할 수 있는 개인정보가 포함되지 않도록 주의하세요. </p>
     <p id="notice" class="greeting"></p>
 
     <form id="regForm" style="margin-top:14px;">
       <label class="field">
-        <span>물품 구분</span>
+        <span>물품구분</span>
         <select id="category" required><option value="">불러오는 중…</option></select>
         <span class="leaf-hint" id="leafHint"></span>
       </label>
 
-      <label class="field"><span>물품명</span>
-        <input type="text" id="name" placeholder="예: 수학익힘책 3-1" required></label>
+      <label class="field"><span>물품명(구체적으로 적어주세요)</span>
+        <input type="text" id="name" placeholder="예: 해리포터 소설책(마법사의 돌 양장)" required></label>
 
       <label class="field"><span>용도</span>
-        <input type="text" id="usage" placeholder="예: 3학년 1학기 수학 보조교재"></label>
+        <input type="text" id="usage" placeholder="예: 상상의 세계로 빠지고 싶을때 읽음"></label>
 
       <label class="field"><span>사용 기간</span>
-        <input type="text" id="period" placeholder="예: 한 학기"></label>
+        <input type="text" id="period" placeholder="예: 한 학기 또는 1년"></label>
 
       <label class="field"><span>상태(사용감)</span>
         <select id="condition">
           <option>매우 좋음</option>
-          <option>좋음</option>
-          <option selected>보통</option>
+          <option selected>좋음</option>
+          <option>보통</option>
           <option>사용감 있음</option>
         </select></label>
 
       <label class="field"><span>스토리·추억 (선택)</span>
-        <textarea id="story" placeholder="이 물건에 얽힌 이야기를 적어보세요"></textarea></label>
+        <textarea id="story" placeholder="이 물건에 얽힌 이야기를 적어보세요. (개인정보 노출 주의)"></textarea></label>
 
       <label class="field"><span>가격 (0~3 G · 0은 무료나눔)</span>
         <select id="price">
@@ -49,7 +50,7 @@
           <option value="3">3 G</option>
         </select></label>
 
-      <span style="font-size:13px;font-weight:600;color:#4a5a4a;">등록 전 확인 (모두 체크해야 등록돼요)</span>
+      <span style="font-size:13px;font-weight:600;color:#4a5a4a;">등록 전 확인 (모두 체크해야 등록됩니다. 꼼꼼히 확인하세요)</span>
       <div class="checklist" id="checklist">불러오는 중…</div>
 
       <button type="submit" id="submitBtn" class="btn-primary btn-block" disabled>모두 확인해야 등록돼요</button>

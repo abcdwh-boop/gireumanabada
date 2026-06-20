@@ -1,262 +1,182 @@
 /* ============================================
    길음중 아나바다 - 기본 스타일
-   모바일 세로 1열 레이아웃
    ============================================ */
 
-   * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Pretendard",
-                 "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    background: #f4f7f2;
-    color: #1f2a1d;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-  }
-  
-  .login-screen {
-    width: 100%;
-    max-width: 420px;
-    min-height: 100vh;
-    padding: 40px 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background: #ffffff;
-  }
-  
-  /* 상단 헤더 */
-  .login-header {
-    text-align: center;
-    margin-top: 40px;
-  }
-  
-  .login-header h1 {
-    font-size: 32px;
-    font-weight: 800;
-    line-height: 1.2;
-    color: #2d5f3f;
-  }
-  
-  .login-header .subtitle {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #6b7c6b;
-  }
-  
-  /* 로그인 폼 */
-  .login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin: 48px 0;
-  }
-  
-  .login-form label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  
-  .login-form label span {
-    font-size: 13px;
-    font-weight: 600;
-    color: #4a5a4a;
-  }
-  
-  .login-form input {
-    height: 48px;
-    padding: 0 14px;
-    border: 1px solid #d1d8d0;
-    border-radius: 8px;
-    font-size: 16px;
-    background: #fafbfa;
-  }
-  
-  .login-form input:focus {
-    outline: none;
-    border-color: #2d5f3f;
-    background: #ffffff;
-  }
-  
-  /* 버튼 */
-  .btn-primary {
-    margin-top: 8px;
-    height: 50px;
-    border: none;
-    border-radius: 8px;
-    background: #2d5f3f;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  
-  .btn-primary:active {
-    background: #224830;
-  }
-  
-  /* 메시지 영역 */
-  .message {
-    min-height: 20px;
-    font-size: 13px;
-    text-align: center;
-    color: #c53030;
-  }
-  
-  /* 하단 안내 */
-  .login-footer {
-    text-align: center;
-    margin-top: auto;
-    padding-top: 24px;
-  }
-  
-  .login-footer small {
-    font-size: 12px;
-    color: #8a988a;
-  }
-  /* ============================================
-   메인 대시보드 (main.html)
-   ============================================ */
-.app-screen {
-  width: 100%;
-  max-width: 420px;
-  min-height: 100vh;
-  padding: 24px 20px 40px;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-}
+   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0');
 
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.app-header h1 { font-size: 20px; font-weight: 800; color: #2d5f3f; }
-.logout-link {
-  font-size: 13px; color: #8a988a;
-  background: none; border: none; cursor: pointer; padding: 4px;
-}
-
-.greeting { font-size: 13px; color: #6b7c6b; margin-top: 6px; }
-
-/* 3대 지표 카드 */
-.stats {
-  display: flex; gap: 10px;
-  margin: 18px 0 26px;
-  background: #2d5f3f; border-radius: 14px;
-  padding: 18px 10px;
-}
-.stat { flex: 1; text-align: center; color: #eaf2ea; }
-.stat .num { font-size: 26px; font-weight: 800; color: #ffffff; line-height: 1.1; }
-.stat .label { font-size: 12px; margin-top: 5px; opacity: .85; }
-
-/* 메뉴 버튼 grid */
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.menu-btn {
-  display: flex; flex-direction: column; gap: 5px;
-  padding: 18px 14px;
-  border: 1px solid #d8e2d8; border-radius: 12px;
-  background: #fafbfa; text-align: left; cursor: pointer;
-}
-.menu-btn:active { background: #eef3ee; }
-.menu-btn .m-title { font-size: 15px; font-weight: 700; color: #1f2a1d; }
-.menu-btn .m-desc  { font-size: 12px; color: #6b7c6b; }
-.menu-btn.role { border-color: #c08a2d; background: #fff8ec; }  /* 상인·관리자 메뉴 강조 */
-/* ============================================
-   폼 / 물품 등록 (register.html)
-   ============================================ */
-   .page-top { margin-bottom: 6px; }
-   .back-link { font-size: 14px; color: #2d5f3f; background: none; border: none; cursor: pointer; padding: 4px 0; }
-   .page-title { font-size: 20px; font-weight: 800; color: #2d5f3f; }
-   
-   .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-   .field > span { font-size: 13px; font-weight: 600; color: #4a5a4a; }
-   .field input, .field select, .field textarea {
-     padding: 12px; border: 1px solid #d1d8d0; border-radius: 8px;
-     font-size: 16px; background: #fafbfa; font-family: inherit;
+   @font-face {
+     font-family: 'GangwonEducationModuche';
+     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
+     font-weight: 300; font-display: swap;
    }
+   @font-face {
+     font-family: 'GangwonEducationModuche';
+     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff') format('woff');
+     font-weight: 700; font-display: swap;
+   }
+   
+   * { box-sizing: border-box; margin: 0; padding: 0; }
+   
+   body {
+     font-family: 'GangwonEducationModuche', -apple-system, BlinkMacSystemFont,
+                  "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+     background: #f4f7f2; color: #1f2a1d; min-height: 100vh;
+     display: flex; justify-content: center;
+   }
+   
+   /* ★ 버튼·입력칸도 같은 폰트 쓰게 (이게 메뉴 글씨체 핵심!) */
+   button, input, select, textarea { font-family: inherit; }
+   
+   /* ===== 로그인 ===== */
+   .login-screen { width: 100%; max-width: 420px; min-height: 100vh; padding: 40px 24px; display: flex; flex-direction: column; justify-content: space-between; background: #ffffff; }
+   .login-header { text-align: center; margin-top: 40px; }
+   .login-header h1 { font-size: 34px; font-weight: 800; line-height: 1.2; color: #2d5f3f; }
+   .login-header .subtitle { margin-top: 12px; font-size: 16px; color: #6b7c6b; }
+   .login-form { display: flex; flex-direction: column; gap: 16px; margin: 48px 0; }
+   .login-form label { display: flex; flex-direction: column; gap: 6px; }
+   .login-form label span { font-size: 15px; font-weight: 600; color: #4a5a4a; }
+   .login-form input { height: 48px; padding: 0 14px; border: 1px solid #d1d8d0; border-radius: 8px; font-size: 18px; background: #fafbfa; }
+   .login-form input:focus { outline: none; border-color: #2d5f3f; background: #ffffff; }
+   .btn-primary { margin-top: 8px; height: 50px; border: none; border-radius: 8px; background: #2d5f3f; color: #ffffff; font-size: 18px; font-weight: 700; cursor: pointer; }
+   .btn-primary:active { background: #224830; }
+   .message { min-height: 20px; font-size: 15px; text-align: center; color: #c53030; }
+   .login-footer { text-align: center; margin-top: auto; padding-top: 24px; }
+   .login-footer small { font-size: 14px; color: #8a988a; }
+   
+   /* ===== 메인 대시보드 ===== */
+   .app-screen { width: 100%; max-width: 420px; min-height: 100vh; padding: 24px 20px 40px; background: #ffffff; display: flex; flex-direction: column; }
+   .app-header { display: flex; align-items: center; justify-content: space-between; }
+   .app-header h1 { font-size: 22px; font-weight: 800; color: #2d5f3f; }
+   .logout-link { font-size: 15px; color: #8a988a; background: none; border: none; cursor: pointer; padding: 4px; }
+   .greeting { font-size: 15px; color: #6b7c6b; margin-top: 6px; }
+   .stats { display: flex; gap: 10px; margin: 18px 0 26px; background: #2d5f3f; border-radius: 14px; padding: 18px 10px; }
+   .stat { flex: 1; text-align: center; color: #eaf2ea; }
+   .stat .num { font-size: 28px; font-weight: 800; color: #ffffff; line-height: 1.1; }
+   .stat .label { font-size: 14px; margin-top: 5px; opacity: .85; }
+   .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+   .menu-btn { display: flex; flex-direction: column; gap: 5px; padding: 18px 14px; border: 1px solid #d8e2d8; border-radius: 12px; background: #fafbfa; text-align: left; cursor: pointer; }
+   .menu-btn:active { background: #eef3ee; }
+   .menu-btn .m-title { font-size: 17px; font-weight: 700; color: #1f2a1d; }
+   .menu-btn .m-desc  { font-size: 14px; color: #6b7c6b; }
+   .menu-btn.role { border-color: #c08a2d; background: #fff8ec; }
+   
+   /* ===== 폼 / 물품 등록 ===== */
+   .page-top { margin-bottom: 6px; }
+   .back-link { font-size: 16px; color: #2d5f3f; background: none; border: none; cursor: pointer; padding: 4px 0; }
+   .page-title { font-size: 22px; font-weight: 800; color: #2d5f3f; }
+   .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+   .field > span { font-size: 15px; font-weight: 600; color: #4a5a4a; }
+   .field input, .field select, .field textarea { padding: 12px; border: 1px solid #d1d8d0; border-radius: 8px; font-size: 18px; background: #fafbfa; }
    .field textarea { min-height: 70px; resize: vertical; }
-   .leaf-hint { font-size: 13px; color: #2d5f3f; font-weight: 700; min-height: 16px; }
-   
+   .leaf-hint { font-size: 15px; color: #2d5f3f; font-weight: 700; min-height: 18px; }
    .checklist { border: 1px solid #e0e6df; border-radius: 10px; padding: 6px 14px; margin: 6px 0 16px; background: #fafbfa; }
-   .checklist .ck { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; font-size: 14px; color: #1f2a1d; }
+   .checklist .ck { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; font-size: 16px; color: #1f2a1d; }
    .checklist .ck input { width: 20px; height: 20px; margin-top: 1px; flex-shrink: 0; }
-   
    .btn-block { width: 100%; }
    .btn-primary:disabled { background: #b9c7b9; cursor: not-allowed; }
-   
    .item-card { border: 1px solid #e0e6df; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: #fff; }
    .item-card .row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-   .item-card .nm { font-size: 15px; font-weight: 700; color: #1f2a1d; }
-   .item-card .ino { font-size: 12px; color: #8a988a; margin-top: 3px; }
-   .item-card .meta { font-size: 13px; color: #6b7c6b; margin-top: 3px; }
-   .badge { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
+   .item-card .nm { font-size: 17px; font-weight: 700; color: #1f2a1d; }
+   .item-card .ino { font-size: 14px; color: #8a988a; margin-top: 3px; }
+   .item-card .meta { font-size: 15px; color: #6b7c6b; margin-top: 3px; }
+   .badge { font-size: 14px; font-weight: 700; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
    .badge.registered { background: #eef3ee; color: #2d5f3f; }
    .badge.onSale { background: #fff3d6; color: #9a6b00; }
    .badge.sold { background: #e9e9e9; color: #666; }
    .badge.removed { background: #fde2e2; color: #b33; }
-   /* ============================================
-   시장 구경 (market.html)
-   ============================================ */
-.toolbar { display: flex; gap: 8px; margin: 12px 0 16px; }
-.toolbar input { flex: 1; padding: 10px; border: 1px solid #d1d8d0; border-radius: 8px; font-size: 15px; background: #fafbfa; }
-.toolbar select { padding: 10px; border: 1px solid #d1d8d0; border-radius: 8px; font-size: 15px; background: #fafbfa; }
-.refresh-btn { background: none; border: 1px solid #cdd6cc; border-radius: 8px; padding: 0 12px; cursor: pointer; color: #2d5f3f; font-size: 16px; }
+   
+   /* ===== 시장 구경 (툴바 2줄 배치로 삐져나감 방지) ===== */
+   .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+   .toolbar input { flex: 1 1 100%; min-width: 0; padding: 10px; border: 1px solid #d1d8d0; border-radius: 8px; font-size: 17px; background: #fafbfa; }
+   .toolbar select { flex: 1 1 0; min-width: 0; padding: 10px; border: 1px solid #d1d8d0; border-radius: 8px; font-size: 17px; background: #fafbfa; }
+   .refresh-btn { flex: 0 0 auto; background: none; border: 1px solid #cdd6cc; border-radius: 8px; padding: 0 14px; cursor: pointer; color: #2d5f3f; font-size: 18px; }
+   .heart { font-size: 15px; font-weight: 700; padding: 6px 11px; border-radius: 20px; border: 1px solid #d8b36a; background: #fff8ec; color: #9a6b00; cursor: pointer; white-space: nowrap; }
+   .heart.on { background: #ffe2e2; border-color: #e88; color: #c33; }
+   .heart:disabled { background: #eee; border-color: #ddd; color: #999; cursor: default; }
+   .item-card .story { font-size: 15px; color: #55624f; margin-top: 7px; background: #f6f9f5; padding: 7px 9px; border-radius: 7px; }
+   
+   /* ===== A/B 지정 ===== */
+   .ab { margin-top: 8px; display: flex; gap: 8px; }
+   .ab-btn { flex: 1; padding: 9px 0; border: 1px solid #cdd6cc; border-radius: 8px; background: #fafbfa; cursor: pointer; font-size: 16px; font-weight: 700; color: #4a5a4a; }
+   .ab-btn.on { background: #2d5f3f; border-color: #2d5f3f; color: #fff; }
+   
+   /* ===== 운영 제어 ===== */
+   .current-box { background: #eef3ee; border-radius: 12px; padding: 14px 16px; margin: 6px 0 18px; }
+   .current-box .lbl { font-size: 15px; color: #6b7c6b; }
+   .current-box .val { font-size: 24px; font-weight: 800; color: #2d5f3f; }
+   .phase-btn { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid #d8e2d8; border-radius: 12px; background: #fafbfa; cursor: pointer; }
+   .phase-btn.on { background: #2d5f3f; border-color: #2d5f3f; }
+   .phase-btn.on .pb-label, .phase-btn.on .pb-desc { color: #fff; }
+   .pb-label { font-size: 18px; font-weight: 800; color: #1f2a1d; }
+   .pb-desc { font-size: 15px; color: #6b7c6b; }
+   
+   /* ===== 카드 액션 ===== */
+   .card-actions { margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px; }
+   .mini { font-size: 15px; font-weight: 700; padding: 6px 12px; border-radius: 7px; border: 1px solid #cdd6cc; background: #fafbfa; color: #2d5f3f; cursor: pointer; }
+   .mini.danger { color: #b33; border-color: #e3b3b3; background: #fdf3f3; }
+   
+   /* ===== 관리자 설정 ===== */
+   .section { margin-top: 26px; border-top: 1px solid #eee; padding-top: 16px; }
+   .section h2 { font-size: 18px; font-weight: 800; color: #2d5f3f; margin-bottom: 10px; }
+   .edit-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+   .edit-row input, .edit-row select { padding: 9px 10px; border: 1px solid #d1d8d0; border-radius: 8px; font-size: 17px; background: #fafbfa; }
+   .edit-row .cat-name, .edit-row .ck-text, .edit-row #roleSid { flex: 1; min-width: 0; }
+   .edit-row .cat-leaf { width: 72px; }
+   
+   /* ===== 아이콘 · 신규 UI ===== */
+   .material-symbols-rounded { font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; }
+   .menu-btn .m-icon { font-size: 31px; color: #2d5f3f; margin-bottom: 2px; }
+   .menu-btn.role .m-icon { color: #c08a2d; }
+   .phase-banner { display: none; margin: 12px 0 4px; padding: 12px 14px; border-radius: 12px; font-size: 18px; text-align: center; color: #fff; letter-spacing: .5px; }
+   .reg-prompt { display: none; font-size: 15px; color: #9a6b00; background: #fff8ec; border: 1px solid #f0e0c0; border-radius: 8px; padding: 8px 12px; margin: 4px 0 16px; text-align: center; }
+   .itemno-big { display: inline-block; font-size: 21px; color: #2d5f3f; background: #eaf3ea; border: 1.5px dashed #2d5f3f; border-radius: 8px; padding: 4px 12px; margin: 4px 0 6px; letter-spacing: 1px; }
+   .howto-tabs { display: flex; gap: 8px; margin: 14px 0 18px; }
+   .howto-tab { flex: 1; padding: 9px 0; border: 1px solid #cdd6cc; border-radius: 8px; background: #fafbfa; color: #4a5a4a; cursor: pointer; font-size: 16px; }
+   .howto-tab.on { background: #2d5f3f; border-color: #2d5f3f; color: #fff; }
+   .howto-panel { display: none; }
+   .howto-panel.on { display: block; }
+   .howto-step { display: flex; gap: 12px; padding: 12px 2px; border-bottom: 1px dashed #e0e6df; }
+   .howto-step:last-child { border-bottom: none; }
+   .howto-step .n { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: #2d5f3f; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
+   .howto-step .tx { font-size: 16px; color: #1f2a1d; line-height: 1.55; }
+   .howto-step .tx b { color: #2d5f3f; }
+   .howto-note { font-size: 15px; color: #6b7c6b; background: #f6f9f5; border-radius: 8px; padding: 10px 12px; margin-top: 14px; line-height: 1.5; }
 
-.heart {
-  font-size: 13px; font-weight: 700; padding: 6px 11px; border-radius: 20px;
-  border: 1px solid #d8b36a; background: #fff8ec; color: #9a6b00;
-  cursor: pointer; white-space: nowrap;
-}
-.heart.on { background: #ffe2e2; border-color: #e88; color: #c33; }
-.heart:disabled { background: #eee; border-color: #ddd; color: #999; cursor: default; }
+   /* ===== 드롭다운(select) 글씨 위·아래 잘림 방지 ===== */
+.field select, .edit-row select, .toolbar select { line-height: 1.7; height: auto; }
+.field select  { min-height: 52px; }
+.toolbar select { min-height: 48px; }
+.edit-row select { min-height: 44px; }
 
-.item-card .story {
-  font-size: 13px; color: #55624f; margin-top: 7px;
-  background: #f6f9f5; padding: 7px 9px; border-radius: 7px;
+/* 물품번호 (한 줄, 작게) */
+.itemno-big {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 6px 12px;
+  margin: 4px 0 6px;
+  line-height: 1.3;
 }
-/* A/B 마켓 지정 버튼 (assign.html) */
-.ab { margin-top: 8px; display: flex; gap: 8px; }
-.ab-btn {
-  flex: 1; padding: 9px 0; border: 1px solid #cdd6cc; border-radius: 8px;
-  background: #fafbfa; cursor: pointer; font-size: 14px; font-weight: 700; color: #4a5a4a;
-}
-.ab-btn.on { background: #2d5f3f; border-color: #2d5f3f; color: #fff; }
-/* 운영 제어 (control.html) */
-.current-box { background: #eef3ee; border-radius: 12px; padding: 14px 16px; margin: 6px 0 18px; }
-.current-box .lbl { font-size: 13px; color: #6b7c6b; }
-.current-box .val { font-size: 22px; font-weight: 800; color: #2d5f3f; }
 
-.phase-btn {
-  width: 100%; text-align: left; display: flex; flex-direction: column; gap: 3px;
-  padding: 14px 16px; margin-bottom: 10px;
-  border: 1px solid #d8e2d8; border-radius: 12px; background: #fafbfa; cursor: pointer;
+/* 비밀번호 보기 토글 */
+.pw-wrap { position: relative; }
+.pw-wrap input { width: 100%; padding-right: 48px; }
+.pw-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 40px; height: 40px; padding: 0;
+  border: none; background: transparent; color: #6b7c6b; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
 }
-.phase-btn.on { background: #2d5f3f; border-color: #2d5f3f; }
-.phase-btn.on .pb-label, .phase-btn.on .pb-desc { color: #fff; }
-.pb-label { font-size: 16px; font-weight: 800; color: #1f2a1d; }
-.pb-desc { font-size: 13px; color: #6b7c6b; }
-/* 내 물품 카드 액션 버튼 (register.html) */
-.card-actions { margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px; }
-.mini {
-  font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 7px;
-  border: 1px solid #cdd6cc; background: #fafbfa; color: #2d5f3f; cursor: pointer;
+.pw-toggle .material-symbols-rounded { font-size: 22px; }
+
+/* 물품 등록 설명상자 (연녹색, 테두리 없음) */
+.reg-desc {
+  font-size: 13px;       /* '물품 구분' 라벨과 같은 크기 */
+  font-weight: 400;      /* 굵지 않게 */
+  color: #4a5a4a;
+  background: #eef3ee;   /* 연한 녹색 */
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0 4px;
+  line-height: 1.5;
 }
-.mini.danger { color: #b33; border-color: #e3b3b3; background: #fdf3f3; }
-/* 관리자 설정 (manage.html) */
-.section { margin-top: 26px; border-top: 1px solid #eee; padding-top: 16px; }
-.section h2 { font-size: 16px; font-weight: 800; color: #2d5f3f; margin-bottom: 10px; }
-.edit-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-.edit-row input, .edit-row select {
-  padding: 9px 10px; border: 1px solid #d1d8d0; border-radius: 8px;
-  font-size: 15px; background: #fafbfa; font-family: inherit;
-}
-.edit-row .cat-name, .edit-row .ck-text, .edit-row #roleSid { flex: 1; min-width: 0; }
-.edit-row .cat-leaf { width: 72px; }

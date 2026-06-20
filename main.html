@@ -14,6 +14,8 @@
       <h1>길음중 아나바다</h1>
       <button id="logoutBtn" class="logout-link">로그아웃</button>
     </div>
+
+    <div id="phaseBanner" class="phase-banner"></div>
     <p id="greeting" class="greeting">불러오는 중…</p>
 
     <div class="stats">
@@ -22,49 +24,53 @@
       <div class="stat"><div class="num" id="tx">-</div><div class="label">거래 건수</div></div>
     </div>
 
+    <p id="regPrompt" class="reg-prompt">📦 지금 <b>내 물품을 등록</b>하세요!</p>
+
     <nav class="menu-grid" id="menu"></nav>
   </main>
 
   <script type="module">
     import { auth, db } from './js/firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { logout } from './js/auth.js';
 
     const ROLE_KO = { student: "학생", merchant: "상인", admin: "관리자" };
 
-    // 등급별 메뉴 정의
     const COMMON = [
-      { title: "내 물품 관리", desc: "등록 · 상태 변경", page: "register.html" },
-      { title: "시장 구경",   desc: "전체 물품 보기",  page: "market.html" },
-      { title: "찜 목록",     desc: "관심 물품",       page: "wishlist.html" },
-      { title: "내 구매 내역", desc: "내가 산 물건",    page: "purchases.html" },
-      { title: "구매 후기",   desc: "설문 작성",       page: "review.html" },
+      { title: "내 물품 관리", desc: "물품등록 · 수정, 삭제", page: "register.html",  icon: "inventory_2" },
+      { title: "시장 구경",    desc: "전체 물품 보러가기",  page: "market.html",    icon: "storefront" },
+      { title: "찜 목록",      desc: "관심 물품은 찜해서 모아보기",       page: "wishlist.html",  icon: "favorite" },
+      { title: "내 구매 내역", desc: "내가 산 물건 확인",    page: "purchases.html", icon: "receipt_long" },
+      { title: "활동 후기",    desc: "설문 작성",       page: "review.html",    icon: "rate_review" },
+      { title: "사용법",       desc: "처음이라면 여기", page: "howto.html",     icon: "menu_book" },
     ];
     const MERCHANT = [
-      { title: "판매 처리", desc: "판매완료 입력", page: "merchant.html", role: true },
-      { title: "마켓 지정", desc: "내 학급 A/B",   page: "assign.html",   role: true },
+      { title: "★판매 처리", desc: "[학급관리자] 판매완료 입력", page: "merchant.html", icon: "point_of_sale", role: true },
+      { title: "☆마켓 지정", desc: "[학급관리자]내 학급 물품 A/B로 나누기",   page: "assign.html",   icon: "label",         role: true },
     ];
     const ADMIN = [
-      { title: "운영 제어",   desc: "페이즈 전환",   page: "control.html", role: true },
-      { title: "관리자 설정", desc: "역할·카테고리", page: "manage.html",  role: true },
-      { title: "나무 화면", desc: "전자칠판용", page: "tree.html", role: true },
+      { title: "마켓 제어",   desc: "마켓 페이즈 전환",   page: "control.html", icon: "tune",     role: true },
+      { title: "관리자 지정", desc: "역할·카테고리 지정 및 수정", page: "manage.html",  icon: "settings", role: true },
+      { title: "나무 화면",   desc: "전자칠판용",    page: "tree.html",    icon: "forest",   role: true },
     ];
+
     let menuDone = false;
     function renderMenu(role){
-      if(menuDone) return;          // 한 번만 그림
+      if(menuDone) return;
       menuDone = true;
       const items = [...COMMON];
       if(role === "merchant") items.push(...MERCHANT);
-      if(role === "admin")    items.push(...ADMIN, ...MERCHANT); // 관리자는 상인 기능도 사용
+      if(role === "admin")    items.push(...ADMIN, ...MERCHANT);
 
+      const BUILT = ["register.html","market.html","wishlist.html","merchant.html","purchases.html","assign.html","control.html","review.html","manage.html","tree.html","howto.html"];
       const menu = document.getElementById("menu");
       for(const it of items){
         const b = document.createElement("button");
         b.className = "menu-btn" + (it.role ? " role" : "");
-        b.innerHTML = `<span class="m-title">${it.title}</span><span class="m-desc">${it.desc}</span>`;
+        b.innerHTML = `<span class="m-icon material-symbols-rounded">${it.icon}</span>
+          <span class="m-title">${it.title}</span><span class="m-desc">${it.desc}</span>`;
         b.addEventListener("click", () => {
-          const BUILT = ["register.html", "market.html", "wishlist.html", "merchant.html", "purchases.html", "assign.html", "control.html", "review.html", "manage.html", "tree.html" ];   // 만든 화면
           if(BUILT.includes(it.page)) window.location.href = it.page;
           else alert(`이 화면은 다음 단계에서 만듭니다 ☺️\n(${it.page})`);
         });
@@ -72,14 +78,31 @@
       }
     }
 
+    async function loadPhaseBanner(){
+      let phase = "pre-open";
+      try {
+        const ps = await getDoc(doc(db, "config", "phaseSchedule"));
+        phase = ps.exists() ? (ps.data().phase || "pre-open") : "pre-open";
+      } catch(e){}
+      const conf = {
+        "pre-open": { t: "🕒 마켓 개장 전", bg: "#5a7a5a" },
+        "A-open":   { t: "🅰️ A마켓 진행 중", bg: "#0f8a7e" },
+        "B-open":   { t: "🅱️ B마켓 진행 중", bg: "#e07a2c" },
+        "closed":   { t: "🚫 마켓 마감", bg: "#8a8a8a" },
+      };
+      const c = conf[phase] || conf["pre-open"];
+      const banner = document.getElementById("phaseBanner");
+      banner.textContent = c.t; banner.style.background = c.bg; banner.style.display = "block";
+      document.getElementById("regPrompt").style.display = (phase === "pre-open") ? "block" : "none";
+    }
+
     onAuthStateChanged(auth, (user) => {
       if(!user){ window.location.href = "index.html"; return; }
-      // 내 사용자 문서를 '실시간 구독' → 숫자가 바뀌면 화면이 저절로 갱신됨 (가벼운 리스너 1개)
+      loadPhaseBanner();
       onSnapshot(doc(db, "users", user.uid), (snap) => {
         if(!snap.exists()){ document.getElementById("greeting").textContent = "사용자 정보를 찾을 수 없습니다."; return; }
         const p = snap.data();
-        document.getElementById("greeting").textContent =
-          `${p.studentId} · ${ROLE_KO[p.role] || p.role}`;
+        document.getElementById("greeting").textContent = `${p.studentId} · ${ROLE_KO[p.role] || p.role}`;
         document.getElementById("balance").textContent = p.balance ?? 0;
         document.getElementById("leaf").textContent    = p.leaf ?? 0;
         document.getElementById("tx").textContent      = p.tradeCount ?? 0;

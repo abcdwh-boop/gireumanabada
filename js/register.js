@@ -13,8 +13,8 @@ const STATUS_KO = { registered: "등록됨", onSale: "판매중", sold: "판매�
 let me = null;
 let categories = [];
 let phaseOpen = true;
-let myItems = [];        // [{ id, ...data }]
-let editingId = null;    // 수정 중인 물품 id (없으면 등록 모드)
+let myItems = [];
+let editingId = null;
 
 onAuthStateChanged(auth, async (user) => {
   if(!user){ location.href = "index.html"; return; }
@@ -107,7 +107,6 @@ $("regForm").addEventListener("submit", async (e) => {
   }
 });
 
-// 새 물품 등록: 채번 + 저장 + 1G (트랜잭션)
 async function registerItem(fields){
   const cc = pad2(me.profile.classNo);
   const counterRef = doc(db, "counters", `${me.profile.grade}-${cc}`);
@@ -190,7 +189,7 @@ async function loadMyItems(){
   try {
     const snap = await getDocs(query(collection(db, "items"), where("sellerUid", "==", me.uid)));
     myItems = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(it => it.status !== "removed");           // 삭제된 건 숨김
+      .filter(it => it.status !== "removed");
     if(myItems.length === 0){ box.innerHTML = `<p class="greeting">아직 등록한 물품이 없어요.</p>`; return; }
     myItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
@@ -200,7 +199,8 @@ async function loadMyItems(){
       return `<div class="item-card">
         <div class="row1"><span class="nm">${it.name}</span>
           <span class="badge ${st}">${STATUS_KO[st] || st}</span></div>
-        <div class="ino">${it.itemNo} · ${it.category}${it.market ? " · " + it.market + "마켓" : ""}</div>
+        <div class="itemno-big">📌 물품번호: ${it.itemNo}</div>
+        <div class="ino">${it.category}${it.market ? " · " + it.market + "마켓" : ""}</div>
         <div class="meta">${it.price}G · 리프 ${it.leafValue}</div>
         ${canEdit ? `<div class="card-actions">
           <button class="mini" data-edit="${it.id}">수정</button>
