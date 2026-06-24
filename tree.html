@@ -21,6 +21,23 @@
     .leaf-inner { transform-box: fill-box; transform-origin: 50% 100%; }
     .leaf-new { animation: sprout .6s cubic-bezier(.2,1.5,.4,1) both; }
     @keyframes sprout { 0% { transform: scale(.05); opacity: 0; } 55% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  
+/* 잎 살랑살랑 흔들림 */
+.leaf-sway {
+  transform-box: fill-box;          /* 잎 자기 영역 기준으로 회전 */
+  transform-origin: 50% 100%;       /* 잎 밑동(줄기)을 축으로 */
+  animation: leafSway 3.4s ease-in-out infinite;
+}
+@keyframes leafSway {
+  0%, 100% { transform: rotate(-3.5deg); }
+  50%      { transform: rotate(3.5deg); }
+}
+/* 멀미 방지 설정을 켠 기기에선 자동으로 멈춤 */
+@media (prefers-reduced-motion: reduce) {
+  .leaf-sway { animation: none; }
+}
+
+
   </style>
 </head>
 <body>
@@ -39,7 +56,7 @@
     </svg>
 
     <div class="topbar">
-      <div class="title">길음중 아나바다 나무<small id="treeLabel">불러오는 중…</small></div>
+      <div class="title">우리반 아나바다 나무<small id="treeLabel">불러오는 중…</small></div>
       <div class="picker"><select id="classSel"></select></div>
     </div>
     <div class="stat">
