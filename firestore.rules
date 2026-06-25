@@ -3,56 +3,81 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    function role() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
-    }
-    function isAdmin()    { return signedIn() && role() == 'admin'; }
-    function isMerchant() { return signedIn() && (role() == 'merchant' || role() == 'admin'); }
 
-    // 사용자
+    // 로그인한 본인의 user 문서 (같은 요청 안에서는 1회만 읽힘)
+    function myData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function myRole()  { return signedIn() ? myData().role : ''; }
+
+    function isAdmin() { return signedIn() && myRole() == 'admin'; }
+    function isVip()   { return signedIn() && myRole() == 'vip'; }
+    // 상인 행위(판매·마켓지정·정산) 가능: 상인 + 담임 + 교사 + 관리자
+    function canSell() { return signedIn() && (myRole() in ['merchant', 'vip', 'teacher', 'admin']); }
+
+    // 이번 update 에서 바뀐 필드 집합
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ── 사용자 ─────────────────────────────────────────────
     match /users/{uid} {
-      allow read:   if signedIn();                 // 로그인 시 다른 사용자 조회 가능(구매자/판매자 찾기)
-      allow create: if isAdmin();                  // 명단 생성은 관리자만
+      allow read:   if signedIn();        // 로그인 시 다른 사용자 조회 가능(구매자/판매자/명단)
+      allow create: if isAdmin();         // 명단 생성은 관리자만
       allow delete: if isAdmin();
+
       allow update: if signedIn() && (
-        // 본인 문서: wishlist / mustChangePassword / balance(±1)만 허용
+        // (1) 본인 문서: wishlist / mustChangePassword / balance(±1)만
         ( request.auth.uid == uid
-          && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['wishlist', 'mustChangePassword', 'balance'])
+          && changedKeys().hasOnly(['wishlist', 'mustChangePassword', 'balance'])
           && request.resource.data.balance >= resource.data.balance - 1
           && request.resource.data.balance <= resource.data.balance + 1
         )
-        || isMerchant()                            // 상인/관리자: 판매 정산 시 구매자/판매자 갱신
+
+        // (2) 관리자: 무엇이든 (role 포함)
+        || isAdmin()
+
+        // (3) 담임(vip): '자기 반'의 '학생/상인' 계정을, '학생/상인'으로만, role 한 칸만 변경
+        || ( isVip()
+             && changedKeys().hasOnly(['role'])
+             && resource.data.grade   == myData().grade
+             && resource.data.classNo == myData().classNo
+             && resource.data.role          in ['student', 'merchant']
+             && request.resource.data.role  in ['student', 'merchant']
+           )
+
+        // (4) 판매 정산: 상인/담임/교사/관리자가 balance·leaf 등 갱신 — 단, role 은 절대 못 바꿈
+        || ( canSell() && !changedKeys().hasAny(['role']) )
       );
     }
 
-    // 물품
+    // ── 물품 ───────────────────────────────────────────────
     match /items/{itemId} {
       allow read:   if signedIn();
       allow create: if signedIn()
-                    && request.resource.data.sellerUid == request.auth.uid;  // 본인 물품만 등록
+                    && request.resource.data.sellerUid == request.auth.uid;
       allow update: if signedIn() && (
-        resource.data.sellerUid == request.auth.uid                          // 본인 물품 수정/삭제
-        || isMerchant()                                                      // 상인/관리자: 판매·마켓지정
+        resource.data.sellerUid == request.auth.uid
+        || canSell()
       );
       allow delete: if isAdmin();
     }
 
-    // 물품번호 채번
+    // ── 물품번호 채번 ──────────────────────────────────────
     match /counters/{key} {
       allow read:  if signedIn();
-      allow write: if signedIn();    // 등록 트랜잭션에서 사용
+      allow write: if signedIn();
     }
 
-    // 학급 리프 집계
+    // ── 학급 리프 집계 ─────────────────────────────────────
     match /classStats/{key} {
-      allow read: if true;  // ← 나무 화면이 로그인 없이 읽도록 공개
-      allow write: if isMerchant();  // 판매 정산에서만 누적
+      allow read:  if true;
+      allow write: if canSell();
     }
 
-    // 설정(카테고리·체크리스트·페이즈·후기폼 등)
+    // ── 설정 ───────────────────────────────────────────────
     match /config/{doc} {
-      allow read:  if true;    // ← 나무의 반 드롭다운(groupMapping) 등 읽도록 공개
+      allow read:  if true;
       allow write: if isAdmin();
     }
   }

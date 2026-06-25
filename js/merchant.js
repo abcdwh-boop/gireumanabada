@@ -1,10 +1,13 @@
 // ============================================
 // 상인 판매완료 처리
+//  · 판매 처리 가능: 상인 + 담임(vip) + 교사(teacher) + 관리자  (canSell)
+//  · 자기 학급 물품만: 상인 + 담임(vip)        / 교사·관리자는 모든 반
 // ============================================
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, runTransaction, serverTimestamp, increment }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { canSell, isClassBoundSeller } from './roles.js';
 
 const $ = (id) => document.getElementById(id);
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -14,9 +17,8 @@ onAuthStateChanged(auth, async (user) => {
   if(!user){ location.href = "index.html"; return; }
   const snap = await getDoc(doc(db, "users", user.uid));
   me = { uid: user.uid, profile: snap.exists() ? snap.data() : {} };
-  const role = me.profile.role;
-  if(role !== "merchant" && role !== "admin"){
-    $("guard").textContent = "이 화면은 상인·관리자만 사용할 수 있어요.";
+  if(!canSell(me.profile.role)){
+    $("guard").textContent = "이 화면은 상인·담임·교사·관리자만 사용할 수 있어요.";
     $("saleForm").style.display = "none";
   }
 });
@@ -49,7 +51,8 @@ $("saleForm").addEventListener("submit", async (e) => {
   const itemRef = itemSnap.docs[0].ref;
   const itemData = itemSnap.docs[0].data();
 
-  if(me.profile.role === "merchant" &&
+  // 상인·담임은 자기 학급 물품만 / 교사·관리자는 모든 반 처리 가능
+  if(isClassBoundSeller(me.profile.role) &&
      (itemData.grade !== me.profile.grade || itemData.classNo !== me.profile.classNo)){
     $("message").textContent = "우리 학급 물품만 처리할 수 있어요."; return;
   }

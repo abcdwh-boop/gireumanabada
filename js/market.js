@@ -1,5 +1,6 @@
 // ============================================
 // 시장 구경 + 찜  (페이지네이션 20개 + 카테고리 정렬)
+//  · 그룹 범위: 학생·상인은 '자기 그룹(groupId)' 물품만 / 담임·교사·관리자는 전체
 // ============================================
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -7,6 +8,7 @@ import { doc, getDoc, updateDoc, collection, getDocs,
          query, where, orderBy, limit, startAfter,
          arrayUnion, arrayRemove }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { isStaff } from './roles.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -16,6 +18,9 @@ let me = null;
 let allItems = [];           // 지금까지 불러온 물품 [{ id, ...data }]
 let wishlist = new Set();    // 찜한 itemId 모음
 let phase = "pre-open";
+
+let groupScoped = false;     // 학생·상인이면 true (자기 그룹만)
+let myGroup = null;          // 내 groupId
 
 let lastDoc = null;          // 다음 페이지 커서
 let reachedEnd = false;      // 더 없으면 true
@@ -27,6 +32,10 @@ onAuthStateChanged(auth, async (user) => {
   const snap = await getDoc(doc(db, "users", user.uid));
   me = { uid: user.uid, profile: snap.exists() ? snap.data() : {} };
   wishlist = new Set(me.profile.wishlist || []);
+
+  // 그룹 범위 결정: 교직원(담임·교사·관리자)은 전체, 그 외(학생·상인)는 자기 그룹만
+  groupScoped = !isStaff(me.profile.role);
+  myGroup = me.profile.groupId || "";
 
   await loadPhase();
   await loadCategories();
@@ -75,10 +84,13 @@ async function loadCategories(){
     cats.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
 }
 
-// 현재 페이즈 + 선택 카테고리에 맞는 쿼리 조건 만들기
+// 현재 그룹 + 페이즈 + 선택 카테고리에 맞는 쿼리 조건 만들기
 function buildConstraints(){
   const cat = $("catFilter").value;
   const c = [];
+
+  // 그룹: 학생·상인은 자기 그룹 물품만 (교직원은 조건 없음 = 전체)
+  if(groupScoped) c.push(where("groupId", "==", myGroup));
 
   // 페이즈별 마켓 노출 (서버에서 거름)
   if(phase === "A-open")      c.push(where("market", "==", "A"));
@@ -101,6 +113,14 @@ function buildConstraints(){
 
 async function loadPage(reset){
   if(loading) return;
+
+  // 학생·상인인데 그룹이 지정 안 됐으면 안내만 (전체가 보이면 안 되므로 막음)
+  if(groupScoped && !myGroup){
+    $("list").innerHTML = `<p class="greeting">아직 그룹이 지정되지 않았어요.<br><small>관리자/담임 선생님께 문의해주세요.</small></p>`;
+    if(moreBtn) moreBtn.style.display = "none";
+    return;
+  }
+
   if(reset){ allItems = []; lastDoc = null; reachedEnd = false; }
   if(reachedEnd) return;
 

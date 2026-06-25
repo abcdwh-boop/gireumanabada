@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>관리자 설정</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 담임 명단(우리 반 상인 지정)용 최소 스타일 */
+    .roster-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #e2e8e2; border-radius:8px; margin-bottom:8px; background:#fff; }
+    .roster-row .nm { font-weight:700; color:#2d5f3f; flex:0 0 auto; }
+    .roster-row .badge { font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; }
+    .roster-row .badge.student { background:#eef3ee; color:#5a7a5a; }
+    .roster-row .badge.merchant { background:#e6f2ec; color:#0f8a7e; }
+    .roster-row .badge.staff { background:#fdeede; color:#e07a2c; }
+    .roster-row .spacer { flex:1; }
+    .roster-row button { flex:0 0 auto; }
+  </style>
 </head>
 <body>
   <main class="app-screen">
@@ -15,21 +26,28 @@
     <p id="guard" class="greeting"></p>
 
     <div id="panel">
-      <div class="section" style="border-top:none; padding-top:0;">
-        <h2>역할 지정 (상인 임명)</h2>
+
+      <!-- admin 전용: ID로 역할 지정 -->
+      <div class="section" id="adminRoleSec" style="border-top:none; padding-top:0; display:none;">
+        <h2>역할 지정</h2>
         <div class="edit-row">
           <input type="text" id="roleSid" placeholder="ID (예: 309lion)">
-          <select id="roleSel">
-            <option value="student">학생</option>
-            <option value="merchant">상인</option>
-            <option value="admin">관리자</option>
-          </select>
+          <select id="roleSel"></select>
           <button type="button" id="roleBtn" class="mini">변경</button>
         </div>
         <p id="roleMsg" class="message"></p>
       </div>
 
-      <div class="section">
+      <!-- vip(담임) 전용: 우리 반 상인 지정 -->
+      <div class="section" id="vipRoleSec" style="border-top:none; padding-top:0; display:none;">
+        <h2 id="vipTitle">우리 반 상인 지정</h2>
+        <p class="greeting" id="vipHint">학생을 상인으로 임명하거나, 상인을 다시 학생으로 되돌릴 수 있어요.</p>
+        <div id="vipRoster"></div>
+        <p id="vipMsg" class="message"></p>
+      </div>
+
+      <!-- 이하 admin 전용 -->
+      <div class="section" id="catSec">
         <h2>카테고리 · 리프값</h2>
         <div id="catRows"></div>
         <button type="button" id="addCat" class="mini">+ 카테고리 추가</button>
@@ -37,7 +55,7 @@
         <p id="catMsg" class="message"></p>
       </div>
 
-      <div class="section">
+      <div class="section" id="ckSec">
         <h2>등록 체크리스트</h2>
         <div id="ckRows"></div>
         <button type="button" id="addCk" class="mini">+ 항목 추가</button>

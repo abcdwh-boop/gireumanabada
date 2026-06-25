@@ -1,0 +1,13 @@
+studentId,grade,classNo,groupId,role
+1011test,,,G1,student
+1012test,,,G1,merchant
+1013test,,,G1,vip
+1061test,,,G2,student
+1062test,,,G2,merchant
+1063test,,,G2,vip
+2011test,,,G3,student
+2012test,,,G3,merchant
+2013test,,,G3,vip
+2051test,,,G4,student
+2052test,,,G4,merchant
+2053test,,,G4,vip

@@ -34,9 +34,9 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { logout } from './js/auth.js';
+    import { canSell, canViewTree, canManageRoles, roleLabel } from './js/roles.js';
 
-    const ROLE_KO = { student: "학생", merchant: "상인", admin: "관리자" };
-
+    // 모든 사용자 공통
     const COMMON = [
       { title: "내 물품 관리", desc: "물품등록 · 수정, 삭제", page: "register.html",  icon: "inventory_2" },
       { title: "시장 구경",    desc: "전체 물품 보러가기",  page: "market.html",    icon: "storefront" },
@@ -45,23 +45,29 @@
       { title: "활동 후기",    desc: "설문 작성",       page: "review.html",    icon: "rate_review" },
       { title: "사용법",       desc: "처음이라면 여기", page: "howto.html",     icon: "menu_book" },
     ];
-    const MERCHANT = [
-      { title: "★판매 처리", desc: "[학급관리자] 판매완료 입력", page: "merchant.html", icon: "point_of_sale", role: true },
-      { title: "☆마켓 지정", desc: "[학급관리자]내 학급 물품 A/B로 나누기",   page: "assign.html",   icon: "label",         role: true },
+    // 판매 행위 가능자 (상인·담임·교사·관리자)
+    const SELL = [
+      { title: "★판매 처리", desc: "판매완료 입력",            page: "merchant.html", icon: "point_of_sale", role: true },
+      { title: "☆마켓 지정", desc: "학급 물품 A/B로 나누기",   page: "assign.html",   icon: "label",         role: true },
     ];
-    const ADMIN = [
-      { title: "마켓 제어",   desc: "마켓 페이즈 전환",   page: "control.html", icon: "tune",     role: true },
-      { title: "관리자 지정", desc: "역할·카테고리 지정 및 수정", page: "manage.html",  icon: "settings", role: true },
-      { title: "나무 화면",   desc: "전자칠판용",    page: "tree.html",    icon: "forest",   role: true },
-    ];
+    // 나무 보기 (담임·교사·관리자)
+    const TREE        = { title: "나무 화면",   desc: "반별 나무 보기 (전자칠판)", page: "tree.html",   icon: "forest",   role: true };
+    // 역할 지정 — 담임/관리자에 따라 라벨 다름
+    const MANAGE_VIP   = { title: "상인 지정",   desc: "우리 반 상인 임명",         page: "manage.html", icon: "settings", role: true };
+    const MANAGE_ADMIN = { title: "관리자 설정", desc: "역할·카테고리 지정 및 수정", page: "manage.html", icon: "settings", role: true };
+    // 마켓 제어 (관리자만)
+    const CONTROL      = { title: "마켓 제어",   desc: "마켓 페이즈 전환",          page: "control.html", icon: "tune",    role: true };
 
     let menuDone = false;
     function renderMenu(role){
       if(menuDone) return;
       menuDone = true;
+
       const items = [...COMMON];
-      if(role === "merchant") items.push(...MERCHANT);
-      if(role === "admin")    items.push(...ADMIN, ...MERCHANT);
+      if(canSell(role))        items.push(...SELL);
+      if(canViewTree(role))    items.push(TREE);
+      if(canManageRoles(role)) items.push(role === "admin" ? MANAGE_ADMIN : MANAGE_VIP);
+      if(role === "admin")     items.push(CONTROL);
 
       const BUILT = ["register.html","market.html","wishlist.html","merchant.html","purchases.html","assign.html","control.html","review.html","manage.html","tree.html","howto.html"];
       const menu = document.getElementById("menu");
@@ -102,7 +108,7 @@
       onSnapshot(doc(db, "users", user.uid), (snap) => {
         if(!snap.exists()){ document.getElementById("greeting").textContent = "사용자 정보를 찾을 수 없습니다."; return; }
         const p = snap.data();
-        document.getElementById("greeting").textContent = `${p.studentId} · ${ROLE_KO[p.role] || p.role}`;
+        document.getElementById("greeting").textContent = `${p.studentId} · ${roleLabel(p.role)}`;
         document.getElementById("balance").textContent = p.balance ?? 0;
         document.getElementById("leaf").textContent    = p.leaf ?? 0;
         document.getElementById("tx").textContent      = p.tradeCount ?? 0;
