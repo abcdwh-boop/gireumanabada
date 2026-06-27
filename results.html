@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>시상 결과</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .award { display:flex; gap:12px; flex-wrap:wrap; margin:12px 0 18px; }
+    .award .card { flex:1; min-width:200px; border:2px solid #cfe0c8; border-radius:12px; padding:14px 16px; background:#fafbfa; }
+    .award .card h3 { font-size:14px; color:#5a7a5a; margin-bottom:6px; }
+    .award .card .win { font-size:22px; font-weight:800; color:#2d5f3f; }
+    .award .card .val { font-size:14px; color:#6b7c6b; margin-top:2px; }
+    table.board { width:100%; border-collapse:collapse; font-size:14px; margin-bottom:18px; }
+    table.board th, table.board td { padding:8px 10px; border-bottom:1px solid #e2e8e2; text-align:left; }
+    table.board th { color:#5a7a5a; font-weight:700; background:#f3f7f3; }
+    table.board td.num { text-align:right; font-variant-numeric:tabular-nums; font-weight:700; color:#2d5f3f; }
+    table.board tr.top td { background:#fff7e6; }
+    table.board .rank { width:34px; color:#8a8a8a; font-weight:700; }
+    h2.sec { font-size:16px; color:#2d5f3f; margin:8px 0; }
+  </style>
+</head>
+<body>
+  <main class="app-screen">
+    <div class="page-top">
+      <button class="back-link" onclick="location.href='main.html'">← 메인으로</button>
+    </div>
+    <div class="page-title">시상 결과 (반별 순위)</div>
+    <p id="guard" class="greeting">불러오는 중…</p>
+
+    <div id="panel" style="display:none;">
+      <div class="award">
+        <div class="card"><h3>🍃 리프 최고 반</h3><div class="win" id="leafWin">-</div><div class="val" id="leafWinVal"></div></div>
+        <div class="card"><h3>🤝 거래 최고 반</h3><div class="win" id="tradeWin">-</div><div class="val" id="tradeWinVal"></div></div>
+      </div>
+
+      <button id="csvBtn" class="btn-primary btn-block" style="margin-bottom:18px;">📥 CSV 다운로드 (엑셀)</button>
+
+      <h2 class="sec">리프 순위</h2>
+      <table class="board"><thead><tr><th class="rank">#</th><th>반</th><th style="text-align:right;">리프 합계</th></tr></thead><tbody id="leafBoard"></tbody></table>
+
+      <h2 class="sec">거래량 순위</h2>
+      <table class="board"><thead><tr><th class="rank">#</th><th>반</th><th style="text-align:right;">거래 합계</th></tr></thead><tbody id="tradeBoard"></tbody></table>
+    </div>
+  </main>
+
+  <script type="module" src="./js/results.js"></script>
+</body>
+</html>

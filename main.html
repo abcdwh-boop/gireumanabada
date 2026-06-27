@@ -57,6 +57,8 @@
     const MANAGE_ADMIN = { title: "관리자 설정", desc: "역할·카테고리 지정 및 수정", page: "manage.html", icon: "settings", role: true };
     // 마켓 제어 (관리자만)
     const CONTROL      = { title: "마켓 제어",   desc: "마켓 페이즈 전환",          page: "control.html", icon: "tune",    role: true };
+    // 시상 결과 (관리자만)
+    const RESULTS      = { title: "시상 결과",   desc: "반별 리프·거래 순위 + CSV",  page: "results.html", icon: "emoji_events", role: true };
 
     let menuDone = false;
     function renderMenu(role){
@@ -67,9 +69,9 @@
       if(canSell(role))        items.push(...SELL);
       if(canViewTree(role))    items.push(TREE);
       if(canManageRoles(role)) items.push(role === "admin" ? MANAGE_ADMIN : MANAGE_VIP);
-      if(role === "admin")     items.push(CONTROL);
+      if(role === "admin")     items.push(CONTROL, RESULTS);
 
-      const BUILT = ["register.html","market.html","wishlist.html","merchant.html","purchases.html","assign.html","control.html","review.html","manage.html","tree.html","howto.html"];
+      const BUILT = ["register.html","market.html","wishlist.html","merchant.html","purchases.html","assign.html","control.html","review.html","manage.html","tree.html","howto.html","results.html"];
       const menu = document.getElementById("menu");
       for(const it of items){
         const b = document.createElement("button");
