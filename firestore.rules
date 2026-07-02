@@ -27,21 +27,24 @@ service cloud.firestore {
       allow delete: if isAdmin();
 
       allow update: if signedIn() && (
-        // (1) 본인 문서: wishlist / mustChangePassword / balance(±1)만
+        // (1) 본인 문서: wishlist / mustChangePassword / balance(±1)만, G캐시 상한 6
         ( request.auth.uid == uid
           && changedKeys().hasOnly(['wishlist', 'mustChangePassword', 'balance'])
           && request.resource.data.balance >= resource.data.balance - 1
           && request.resource.data.balance <= resource.data.balance + 1
+          && ( request.resource.data.balance <= 6                          // 6 이하면 OK
+               || request.resource.data.balance <= resource.data.balance ) // 6 초과는 '증가'만 차단(감소·유지는 허용)
         )
 
         // (2) 관리자: 무엇이든 (role 포함)
         || isAdmin()
 
         // (3) 담임(vip): '자기 반'의 '학생/상인' 계정을, '학생/상인'으로만, role 한 칸만 변경
+        //     grade/classNo 가 문자열로 저장돼 있어도 되도록 int() 로 비교
         || ( isVip()
              && changedKeys().hasOnly(['role'])
-             && resource.data.grade   == myData().grade
-             && resource.data.classNo == myData().classNo
+             && int(resource.data.grade)   == int(myData().grade)
+             && int(resource.data.classNo) == int(myData().classNo)
              && resource.data.role          in ['student', 'merchant']
              && request.resource.data.role  in ['student', 'merchant']
            )

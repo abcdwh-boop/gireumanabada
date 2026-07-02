@@ -17,15 +17,15 @@ let myItems = [];
 let editingId = null;
 
 onAuthStateChanged(auth, async (user) => {
-  if(!user){ location.href = "index.html"; return; }
+  if (!user) { location.href = "index.html"; return; }
   const snap = await getDoc(doc(db, "users", user.uid));
-  if(!snap.exists()){ $("notice").textContent = "사용자 정보를 찾을 수 없습니다."; return; }
+  if (!snap.exists()) { $("notice").textContent = "사용자 정보를 찾을 수 없습니다."; return; }
   me = { uid: user.uid, profile: snap.data() };
   await loadConfig();
   await loadMyItems();
 });
 
-async function loadConfig(){
+async function loadConfig() {
   const fp = await getDoc(doc(db, "config", "footprintTable"));
   categories = fp.exists() ? (fp.data().categories || []) : [];
   const sel = $("category");
@@ -44,18 +44,18 @@ async function loadConfig(){
 
   const ps = await getDoc(doc(db, "config", "phaseSchedule"));
   phaseOpen = (ps.exists() ? ps.data().phase : "pre-open") === "pre-open";
-  if(!phaseOpen){
+  if (!phaseOpen) {
     $("notice").textContent = "지금은 물품 등록·수정 기간이 아닙니다.";
     $("regForm").querySelectorAll("input,select,textarea,button").forEach(el => el.disabled = true);
   }
 }
 
-function allChecked(){
+function allChecked() {
   const cks = [...document.querySelectorAll('#checklist input[type=checkbox]')];
   return cks.length > 0 && cks.every(c => c.checked);
 }
-function updateGate(){
-  if(!phaseOpen) return;
+function updateGate() {
+  if (!phaseOpen) return;
   const ok = allChecked();
   $("submitBtn").disabled = !ok;
   $("submitBtn").textContent = ok ? (editingId ? "수정 저장" : "물품 등록하기") : "모두 확인해야 등록돼요";
@@ -65,14 +65,14 @@ $("regForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   $("message").style.color = "#c53030";
   $("message").textContent = "";
-  if(!me || !phaseOpen) return;
-  if(!allChecked()){ $("message").textContent = "확인 항목을 모두 체크하세요."; return; }
+  if (!me || !phaseOpen) return;
+  if (!allChecked()) { $("message").textContent = "확인 항목을 모두 체크하세요."; return; }
 
   const catIdx = $("category").value;
-  if(catIdx === ""){ $("message").textContent = "물품 구분을 선택하세요."; return; }
+  if (catIdx === "") { $("message").textContent = "물품 구분을 선택하세요."; return; }
   const cat = categories[catIdx];
   const name = $("name").value.trim();
-  if(!name){ $("message").textContent = "물품명을 입력하세요."; return; }
+  if (!name) { $("message").textContent = "물품명을 입력하세요."; return; }
 
   const fields = {
     name, category: cat.name, leafValue: cat.leaf,
@@ -86,39 +86,45 @@ $("regForm").addEventListener("submit", async (e) => {
   $("submitBtn").disabled = true;
   $("submitBtn").textContent = editingId ? "저장 중…" : "등록 중…";
   try {
-    if(editingId){
+    if (editingId) {
       await updateDoc(doc(db, "items", editingId), { ...fields, updatedAt: serverTimestamp() });
       $("message").style.color = "#2d5f3f";
       $("message").textContent = "수정 완료!";
       exitEditMode();
     } else {
-      const itemNo = await registerItem(fields);
+      const { itemNo, gained } = await registerItem(fields);
       $("message").style.color = "#2d5f3f";
-      $("message").textContent = `등록 완료! 물품번호 ${itemNo} · 1G 적립 🎉`;
+      $("message").textContent = gained > 0
+        ? `등록 완료! 물품번호 ${itemNo} · ${gained}G 적립 🎉`
+        : `등록 완료! 물품번호 ${itemNo} · (G캐시는 최대 ${BALANCE_CAP}G까지예요)`;
       $("regForm").reset();
       $("leafHint").textContent = "";
       updateGate();
     }
     await loadMyItems();
-  } catch(err){
+  } catch (err) {
     $("message").style.color = "#c53030";
     $("message").textContent = "오류: " + (err.message || err.code);
     updateGate();
   }
 });
 
-async function registerItem(fields){
+const BALANCE_CAP = 6;   // G캐시 상한 (등록은 계속 가능하지만 캐시는 여기까지만)
+
+async function registerItem(fields) {
   const cc = pad2(me.profile.classNo);
   const counterRef = doc(db, "counters", `${me.profile.grade}-${cc}`);
   const userRef = doc(db, "users", me.uid);
   const itemRef = doc(collection(db, "items"));
-  let itemNo;
+  let itemNo, gained = 0;
   await runTransaction(db, async (tx) => {
     const counterSnap = await tx.get(counterRef);
     const userSnap = await tx.get(userRef);
     const seq = (counterSnap.exists() ? (counterSnap.data().seq || 0) : 0) + 1;
     itemNo = `${me.profile.grade}-${cc}-${pad2(seq)}`;
     const bal = userSnap.exists() ? (userSnap.data().balance || 0) : 0;
+    const newBal = Math.min(BALANCE_CAP, bal + 1);   // 6G 상한
+    gained = newBal - bal;                            // 0 또는 1
     tx.set(counterRef, { seq }, { merge: true });
     tx.set(itemRef, {
       ...fields, itemNo,
@@ -127,14 +133,14 @@ async function registerItem(fields){
       market: null, status: "registered", checklistPassed: true,
       createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
     });
-    tx.update(userRef, { balance: bal + 1 });
+    tx.update(userRef, { balance: newBal });
   });
-  return itemNo;
+  return { itemNo, gained };
 }
 
-function startEdit(id){
+function startEdit(id) {
   const it = myItems.find(x => x.id === id);
-  if(!it) return;
+  if (!it) return;
   editingId = id;
   $("category").value = String(categories.findIndex(c => c.name === it.category));
   $("leafHint").textContent = `이 물건의 환경기여도: ${it.leafValue} 리프`;
@@ -152,7 +158,7 @@ function startEdit(id){
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function exitEditMode(){
+function exitEditMode() {
   editingId = null;
   $("regForm").reset();
   $("leafHint").textContent = "";
@@ -162,35 +168,35 @@ function exitEditMode(){
 }
 $("cancelEdit").addEventListener("click", exitEditMode);
 
-async function deleteItem(id){
+async function deleteItem(id) {
   const it = myItems.find(x => x.id === id);
-  if(!confirm(`"${it?.name}" 을(를) 삭제할까요?\n등록 보상 1G가 회수됩니다.`)) return;
+  if (!confirm(`"${it?.name}" 을(를) 삭제할까요?\n등록 보상 1G가 회수됩니다.`)) return;
   try {
     await runTransaction(db, async (tx) => {
       const userRef = doc(db, "users", me.uid);
       const itemRef = doc(db, "items", id);
       const userSnap = await tx.get(userRef);
       const itemSnap = await tx.get(itemRef);
-      if(!itemSnap.exists()) throw new Error("이미 없는 물품이에요.");
-      if(itemSnap.data().status === "sold") throw new Error("판매완료된 물품은 삭제할 수 없어요.");
+      if (!itemSnap.exists()) throw new Error("이미 없는 물품이에요.");
+      if (itemSnap.data().status === "sold") throw new Error("판매완료된 물품은 삭제할 수 없어요.");
       const bal = userSnap.exists() ? (userSnap.data().balance || 0) : 0;
       tx.update(itemRef, { status: "removed", updatedAt: serverTimestamp() });
       tx.update(userRef, { balance: Math.max(0, bal - 1) });
     });
-    if(editingId === id) exitEditMode();
+    if (editingId === id) exitEditMode();
     await loadMyItems();
-  } catch(e){
+  } catch (e) {
     alert("삭제 오류: " + (e.message || e.code));
   }
 }
 
-async function loadMyItems(){
+async function loadMyItems() {
   const box = $("myItems");
   try {
     const snap = await getDocs(query(collection(db, "items"), where("sellerUid", "==", me.uid)));
     myItems = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .filter(it => it.status !== "removed");
-    if(myItems.length === 0){ box.innerHTML = `<p class="greeting">아직 등록한 물품이 없어요.</p>`; return; }
+    if (myItems.length === 0) { box.innerHTML = `<p class="greeting">아직 등록한 물품이 없어요.</p>`; return; }
     myItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
     box.innerHTML = myItems.map(it => {
@@ -211,7 +217,7 @@ async function loadMyItems(){
 
     box.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => startEdit(b.dataset.edit)));
     box.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => deleteItem(b.dataset.del)));
-  } catch(err){
+  } catch (err) {
     box.innerHTML = `<p class="message">목록 오류: ${err.code || err.message}</p>`;
   }
 }
