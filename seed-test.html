@@ -1,24 +1,95 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>테스트 데이터 생성 (임시)</title>
-<style>
-  body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color:#222; }
-  h1 { font-size: 20px; }
-  .card { border:1px solid #ddd; border-radius:12px; padding:16px; margin:16px 0; }
-  .card h2 { font-size:16px; margin:0 0 8px; }
-  label { display:block; font-size:14px; margin:8px 0 4px; }
-  input { width:100%; padding:8px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box; font-size:14px; }
-  button { background:#2e7d32; color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:14px; cursor:pointer; margin-top:10px; }
-  button.danger { background:#c62828; }
-  button:disabled { opacity:.5; cursor:not-allowed; }
-  #log { background:#0f172a; color:#d1fae5; font-size:13px; padding:12px; border-radius:8px; height:180px; overflow:auto; white-space:pre-wrap; margin-top:16px; }
-  .who { font-size:13px; color:#555; }
-  .hint { font-size:12px; color:#777; margin-top:4px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>테스트 데이터 생성 (임시)</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #222;
+    }
+
+    h1 {
+      font-size: 20px;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      margin: 0 0 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin: 8px 0 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    button {
+      background: #2e7d32;
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button.danger {
+      background: #c62828;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    #log {
+      background: #0f172a;
+      color: #d1fae5;
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 8px;
+      height: 180px;
+      overflow: auto;
+      white-space: pre-wrap;
+      margin-top: 16px;
+    }
+
+    .who {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #777;
+      margin-top: 4px;
+    }
+  </style>
 </head>
+
 <body>
   <h1>🧪 테스트 데이터 생성기 (임시 도구)</h1>
   <p class="who" id="who">로그인 확인 중…</p>
@@ -38,8 +109,8 @@
     <label>리프 총량 (leafTotal)</label>
     <input id="treeLeaf" type="number" value="120" min="0">
     <p class="hint">tree.html에서 잎 개수·상한을 눈으로 확인할 때 씁니다.
-       ⚠️ <b>실제 운영할 반에는 쓰지 마세요.</b> 이 버튼으로 값을 넣으면 그 반 classStats가 '테스트'로 표시돼,
-       ③ 삭제 시 0으로 초기화됩니다(실제 거래분도 함께 사라짐).</p>
+      ⚠️ <b>실제 운영할 반에는 쓰지 마세요.</b> 이 버튼으로 값을 넣으면 그 반 classStats가 '테스트'로 표시돼,
+      ③ 삭제 시 0으로 초기화됩니다(실제 거래분도 함께 사라짐).</p>
     <button id="setTree">리프값 설정</button>
   </div>
 
@@ -52,184 +123,192 @@
   <div class="card">
     <h2>④ 전체 초기화 (행사 전 클린)</h2>
     <p class="hint">모든 학생을 <b>잔액 3G · 리프 0 · 거래 0 · 찜 비움</b>으로, 그리고 모든 classStats를 <b>0</b>으로 맞춥니다.
-       개인 리프와 반 나무가 0에서 같이 시작하게 돼요. <b>행사 직전에 한 번</b> 누르세요. (관리자 잔액은 0)</p>
+      개인 리프와 반 나무가 0에서 같이 시작하게 돼요. <b>행사 직전에 한 번</b> 누르세요. (관리자 잔액은 0)</p>
     <label style="display:flex; align-items:center; gap:6px; font-size:14px; margin-top:8px;">
-      <input type="checkbox" id="alsoItems" style="width:auto;"> 물품(items)도 전부 삭제 — 학생들이 당일 새로 등록
+      <input type="checkbox" id="alsoItems" style="width:auto;"> 물품(items)도 전부 삭제 + 물품번호 01부터 리셋 — 학생들이 당일 새로 등록
     </label>
     <button id="fullReset" class="danger">전체 초기화 실행</button>
   </div>
 
   <div id="log">준비됨.</div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, getDocs, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { firebaseConfig } from "./js/firebase-config.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, getDocs, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { firebaseConfig } from "./js/firebase-config.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  const logEl = document.getElementById("log");
-  const log = (m) => { logEl.textContent += "\n" + m; logEl.scrollTop = logEl.scrollHeight; };
+    const logEl = document.getElementById("log");
+    const log = (m) => { logEl.textContent += "\n" + m; logEl.scrollTop = logEl.scrollHeight; };
 
-  let me = null, myUid = null;
+    let me = null, myUid = null;
 
-  const DEFAULT_CATS = [
-    {name:"의류·신발", leaf:5},{name:"가방류", leaf:5},{name:"도서·지류", leaf:5},
-    {name:"생활용품", leaf:7},{name:"장난감·인형", leaf:3},{name:"가전·배터리", leaf:10},
-    {name:"보드게임류", leaf:4},{name:"학용품·문구류", leaf:3}
-  ];
+    const DEFAULT_CATS = [
+      { name: "의류·신발", leaf: 5 }, { name: "가방류", leaf: 5 }, { name: "도서·지류", leaf: 5 },
+      { name: "생활용품", leaf: 7 }, { name: "장난감·인형", leaf: 3 }, { name: "가전·배터리", leaf: 10 },
+      { name: "보드게임류", leaf: 4 }, { name: "학용품·문구류", leaf: 3 }
+    ];
 
-  onAuthStateChanged(auth, async (user) => {
-    const btns = document.querySelectorAll("button");
-    if (!user) {
-      document.getElementById("who").textContent = "⚠️ 로그인 안 됨. 같은 브라우저에서 관리자(admin01)로 먼저 로그인한 뒤 이 페이지를 여세요.";
-      btns.forEach(b => b.disabled = true);
-      return;
+    onAuthStateChanged(auth, async (user) => {
+      const btns = document.querySelectorAll("button");
+      if (!user) {
+        document.getElementById("who").textContent = "⚠️ 로그인 안 됨. 같은 브라우저에서 관리자(admin01)로 먼저 로그인한 뒤 이 페이지를 여세요.";
+        btns.forEach(b => b.disabled = true);
+        return;
+      }
+      myUid = user.uid;
+      try { const s = await getDoc(doc(db, "users", user.uid)); me = s.exists() ? s.data() : {}; }
+      catch (e) { me = {}; }
+      document.getElementById("who").textContent =
+        `로그인됨: ${me.name || "?"} (ID ${me.studentId || "?"}, 권한 ${me.role || "?"})`;
+      if (me.role !== "admin") log("⚠️ 관리자 계정이 아니면 보안 규칙에 막힐 수 있어요. admin01로 로그인 권장.");
+    });
+
+    async function getCategories() {
+      try {
+        const s = await getDoc(doc(db, "config", "footprintTable"));
+        const arr = s.exists() && Array.isArray(s.data().categories) ? s.data().categories : null;
+        if (arr && arr.length) return arr;
+      } catch (e) { }
+      return DEFAULT_CATS;
     }
-    myUid = user.uid;
-    try { const s = await getDoc(doc(db, "users", user.uid)); me = s.exists() ? s.data() : {}; }
-    catch(e){ me = {}; }
-    document.getElementById("who").textContent =
-      `로그인됨: ${me.name || "?"} (ID ${me.studentId || "?"}, 권한 ${me.role || "?"})`;
-    if (me.role !== "admin") log("⚠️ 관리자 계정이 아니면 보안 규칙에 막힐 수 있어요. admin01로 로그인 권장.");
-  });
 
-  async function getCategories(){
-    try {
-      const s = await getDoc(doc(db, "config", "footprintTable"));
-      const arr = s.exists() && Array.isArray(s.data().categories) ? s.data().categories : null;
-      if (arr && arr.length) return arr;
-    } catch(e){}
-    return DEFAULT_CATS;
-  }
+    // ① 물품 생성
+    document.getElementById("makeItems").addEventListener("click", async () => {
+      const btn = document.getElementById("makeItems");
+      const n = Math.max(1, Math.min(200, parseInt(document.getElementById("count").value || "40", 10)));
+      btn.disabled = true;
+      try {
+        const cats = await getCategories();
+        log(`물품 ${n}개 생성 시작… (카테고리 ${cats.length}종)`);
+        for (let i = 1; i <= n; i++) {
+          const c = cats[(i - 1) % cats.length];
+          const market = (i % 2 === 0) ? "A" : "B";
+          const nn = String(i).padStart(2, "0");
+          await addDoc(collection(db, "items"), {
+            itemNo: `9-99-${nn}`,            // 9-99 = 테스트 전용 (실제 채번 안 건드림)
+            sellerUid: myUid,                // 보안 규칙 통과용 (실제 내 uid)
+            sellerStudentId: "9999999",
+            groupId: "G7",
+            grade: 9, classNo: 99,
+            category: c.name,
+            name: `테스트물품 ${nn} (${c.name})`,
+            usage: "테스트용 가상 데이터", period: "1년 미만", condition: "상",
+            story: "테스트 자동 생성 물품입니다.",
+            price: (i % 4),                  // 0~3
+            leafValue: c.leaf ?? 5,
+            market: market,
+            status: "registered",
+            checklistPassed: true,
+            isTest: true,
+            createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+          });
+          if (i % 10 === 0) log(`  …${i}개 완료`);
+        }
+        log(`✅ 물품 ${n}개 생성 완료! 앱 시장 화면을 새로고침해 보세요.`);
+      } catch (e) {
+        log("❌ 오류: " + (e.message || e));
+        log("   (보안 규칙에 막혔다면 관리자로 로그인했는지 확인하거나 알려주세요.)");
+      } finally { btn.disabled = false; }
+    });
 
-  // ① 물품 생성
-  document.getElementById("makeItems").addEventListener("click", async () => {
-    const btn = document.getElementById("makeItems");
-    const n = Math.max(1, Math.min(200, parseInt(document.getElementById("count").value || "40", 10)));
-    btn.disabled = true;
-    try {
-      const cats = await getCategories();
-      log(`물품 ${n}개 생성 시작… (카테고리 ${cats.length}종)`);
-      for (let i = 1; i <= n; i++) {
-        const c = cats[(i-1) % cats.length];
-        const market = (i % 2 === 0) ? "A" : "B";
-        const nn = String(i).padStart(2, "0");
-        await addDoc(collection(db, "items"), {
-          itemNo: `9-99-${nn}`,            // 9-99 = 테스트 전용 (실제 채번 안 건드림)
-          sellerUid: myUid,                // 보안 규칙 통과용 (실제 내 uid)
-          sellerStudentId: "9999999",
-          groupId: "G7",
-          grade: 9, classNo: 99,
-          category: c.name,
-          name: `테스트물품 ${nn} (${c.name})`,
-          usage: "테스트용 가상 데이터", period: "1년 미만", condition: "상",
-          story: "테스트 자동 생성 물품입니다.",
-          price: (i % 4),                  // 0~3
-          leafValue: c.leaf ?? 5,
-          market: market,
-          status: "registered",
-          checklistPassed: true,
-          isTest: true,
-          createdAt: serverTimestamp(), updatedAt: serverTimestamp()
-        });
-        if (i % 10 === 0) log(`  …${i}개 완료`);
-      }
-      log(`✅ 물품 ${n}개 생성 완료! 앱 시장 화면을 새로고침해 보세요.`);
-    } catch(e){
-      log("❌ 오류: " + (e.message || e));
-      log("   (보안 규칙에 막혔다면 관리자로 로그인했는지 확인하거나 알려주세요.)");
-    } finally { btn.disabled = false; }
-  });
+    // ② 나무 리프값 설정
+    document.getElementById("setTree").addEventListener("click", async () => {
+      const btn = document.getElementById("setTree");
+      const key = (document.getElementById("treeClass").value || "").trim();
+      const leaf = parseInt(document.getElementById("treeLeaf").value || "0", 10);
+      if (!/^\d-\d{2}$/.test(key)) { log("⚠️ 반 형식은 3-09 처럼 입력하세요."); return; }
+      btn.disabled = true;
+      try {
+        const [g, cls] = key.split("-");
+        await setDoc(doc(db, "classStats", key),
+          { leafTotal: leaf, grade: parseInt(g, 10), classNo: parseInt(cls, 10), isTest: true },
+          { merge: true });
+        log(`✅ classStats/${key}.leafTotal = ${leaf} 설정 완료. tree.html에서 ${key} 선택해 확인하세요.`);
+      } catch (e) { log("❌ 오류: " + (e.message || e)); }
+      finally { btn.disabled = false; }
+    });
 
-  // ② 나무 리프값 설정
-  document.getElementById("setTree").addEventListener("click", async () => {
-    const btn = document.getElementById("setTree");
-    const key = (document.getElementById("treeClass").value || "").trim();
-    const leaf = parseInt(document.getElementById("treeLeaf").value || "0", 10);
-    if (!/^\d-\d{2}$/.test(key)) { log("⚠️ 반 형식은 3-09 처럼 입력하세요."); return; }
-    btn.disabled = true;
-    try {
-      const [g, cls] = key.split("-");
-      await setDoc(doc(db, "classStats", key),
-        { leafTotal: leaf, grade: parseInt(g,10), classNo: parseInt(cls,10), isTest: true },
-        { merge: true });
-      log(`✅ classStats/${key}.leafTotal = ${leaf} 설정 완료. tree.html에서 ${key} 선택해 확인하세요.`);
-    } catch(e){ log("❌ 오류: " + (e.message || e)); }
-    finally { btn.disabled = false; }
-  });
+    // ③ 테스트 데이터 삭제
+    document.getElementById("cleanup").addEventListener("click", async () => {
+      if (!confirm("isTest 표시된 테스트 물품을 모두 지우고 테스트 리프값을 0으로 되돌립니다. 진행할까요?")) return;
+      const btn = document.getElementById("cleanup");
+      btn.disabled = true;
+      try {
+        log("테스트 물품 삭제 중…");
+        const itemSnap = await getDocs(query(collection(db, "items"), where("isTest", "==", true)));
+        let n = 0;
+        for (const d of itemSnap.docs) { await deleteDoc(d.ref); n++; }
+        log(`  물품 ${n}개 삭제`);
 
-  // ③ 테스트 데이터 삭제
-  document.getElementById("cleanup").addEventListener("click", async () => {
-    if (!confirm("isTest 표시된 테스트 물품을 모두 지우고 테스트 리프값을 0으로 되돌립니다. 진행할까요?")) return;
-    const btn = document.getElementById("cleanup");
-    btn.disabled = true;
-    try {
-      log("테스트 물품 삭제 중…");
-      const itemSnap = await getDocs(query(collection(db,"items"), where("isTest","==",true)));
-      let n = 0;
-      for (const d of itemSnap.docs){ await deleteDoc(d.ref); n++; }
-      log(`  물품 ${n}개 삭제`);
+        log("테스트 리프값 0으로 초기화 중…");
+        const csSnap = await getDocs(query(collection(db, "classStats"), where("isTest", "==", true)));
+        let m = 0;
+        for (const d of csSnap.docs) { await setDoc(d.ref, { leafTotal: 0, isTest: false }, { merge: true }); m++; }
+        log(`  리프값 ${m}개 초기화(0)`);
 
-      log("테스트 리프값 0으로 초기화 중…");
-      const csSnap = await getDocs(query(collection(db,"classStats"), where("isTest","==",true)));
-      let m = 0;
-      for (const d of csSnap.docs){ await setDoc(d.ref, { leafTotal: 0, isTest: false }, { merge:true }); m++; }
-      log(`  리프값 ${m}개 초기화(0)`);
+        log("✅ 테스트 데이터 정리 완료.");
+      } catch (e) { log("❌ 오류: " + (e.message || e)); }
+      finally { btn.disabled = false; }
+    });
 
-      log("✅ 테스트 데이터 정리 완료.");
-    } catch(e){ log("❌ 오류: " + (e.message || e)); }
-    finally { btn.disabled = false; }
-  });
+    // ④ 전체 초기화 (행사 전 클린)
+    document.getElementById("fullReset").addEventListener("click", async () => {
+      const delItems = document.getElementById("alsoItems").checked;
+      const msg = delItems
+        ? "모든 학생 리프·거래·잔액을 초기화하고, classStats를 0으로, 물품(items)도 전부 삭제합니다.\n되돌릴 수 없어요. 진행할까요?"
+        : "모든 학생 리프·거래·잔액을 초기화하고, classStats를 0으로 만듭니다. (물품 유지)\n진행할까요?";
+      if (!confirm(msg)) return;
+      const btn = document.getElementById("fullReset");
+      btn.disabled = true;
+      try {
+        // 1) 사용자 초기화
+        log("사용자 초기화 중…");
+        const usnap = await getDocs(collection(db, "users"));
+        let u = 0;
+        for (const d of usnap.docs) {
+          const role = (d.data().role || "").trim().toLowerCase();
+          await updateDoc(d.ref, {
+            balance: (role === "admin") ? 0 : 3,
+            leaf: 0, tradeCount: 0, wishlist: []
+          });
+          u++;
+          if (u % 50 === 0) log(`  …${u}명`);
+        }
+        log(`  사용자 ${u}명 초기화 (잔액 3G·리프 0·거래 0·찜 비움)`);
 
-  // ④ 전체 초기화 (행사 전 클린)
-  document.getElementById("fullReset").addEventListener("click", async () => {
-    const delItems = document.getElementById("alsoItems").checked;
-    const msg = delItems
-      ? "모든 학생 리프·거래·잔액을 초기화하고, classStats를 0으로, 물품(items)도 전부 삭제합니다.\n되돌릴 수 없어요. 진행할까요?"
-      : "모든 학생 리프·거래·잔액을 초기화하고, classStats를 0으로 만듭니다. (물품 유지)\n진행할까요?";
-    if (!confirm(msg)) return;
-    const btn = document.getElementById("fullReset");
-    btn.disabled = true;
-    try {
-      // 1) 사용자 초기화
-      log("사용자 초기화 중…");
-      const usnap = await getDocs(collection(db, "users"));
-      let u = 0;
-      for (const d of usnap.docs){
-        const role = (d.data().role || "").trim().toLowerCase();
-        await updateDoc(d.ref, {
-          balance: (role === "admin") ? 0 : 3,
-          leaf: 0, tradeCount: 0, wishlist: []
-        });
-        u++;
-        if (u % 50 === 0) log(`  …${u}명`);
-      }
-      log(`  사용자 ${u}명 초기화 (잔액 3G·리프 0·거래 0·찜 비움)`);
+        // 2) classStats 전부 0
+        log("classStats 0으로…");
+        const csnap = await getDocs(collection(db, "classStats"));
+        let c = 0;
+        for (const d of csnap.docs) { await setDoc(d.ref, { leafTotal: 0, isTest: false }, { merge: true }); c++; }
+        log(`  classStats ${c}개 0`);
 
-      // 2) classStats 전부 0
-      log("classStats 0으로…");
-      const csnap = await getDocs(collection(db, "classStats"));
-      let c = 0;
-      for (const d of csnap.docs){ await setDoc(d.ref, { leafTotal: 0, isTest: false }, { merge:true }); c++; }
-      log(`  classStats ${c}개 0`);
+        // 3) (선택) 물품 삭제 + 물품번호 카운터 리셋
+        if (delItems) {
+          log("물품 삭제 중…");
+          const isnap = await getDocs(collection(db, "items"));
+          let it = 0;
+          for (const d of isnap.docs) { await deleteDoc(d.ref); it++; if (it % 50 === 0) log(`  …${it}개`); }
+          log(`  물품 ${it}개 삭제`);
 
-      // 3) (선택) 물품 삭제
-      if (delItems){
-        log("물품 삭제 중…");
-        const isnap = await getDocs(collection(db, "items"));
-        let it = 0;
-        for (const d of isnap.docs){ await deleteDoc(d.ref); it++; if (it % 50 === 0) log(`  …${it}개`); }
-        log(`  물품 ${it}개 삭제`);
-      }
+          // 물품번호 채번 카운터도 삭제 → 다음 등록부터 01번부터 다시 시작
+          log("물품번호 카운터 리셋 중…");
+          const cntSnap = await getDocs(collection(db, "counters"));
+          let cn = 0;
+          for (const d of cntSnap.docs) { await deleteDoc(d.ref); cn++; }
+          log(`  카운터 ${cn}개 리셋 (다음 등록은 01번부터)`);
+        }
 
-      log("✅ 전체 초기화 완료. 행사 시작 상태(잔액 3G·리프 0·나무 0)예요.");
-    } catch(e){ log("❌ 오류: " + (e.message || e)); }
-    finally { btn.disabled = false; }
-  });
-</script>
+        log("✅ 전체 초기화 완료. 행사 시작 상태(잔액 3G·리프 0·나무 0)예요.");
+      } catch (e) { log("❌ 오류: " + (e.message || e)); }
+      finally { btn.disabled = false; }
+    });
+  </script>
 </body>
+
 </html>

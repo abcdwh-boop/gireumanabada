@@ -10,6 +10,27 @@ const $ = (id) => document.getElementById(id);
 const pad2 = (n) => String(n).padStart(2, "0");
 const STATUS_KO = { registered: "등록됨", onSale: "판매중", sold: "판매완료", removed: "삭제" };
 
+// ── 금칙어 필터 ─────────────────────────────────────────────
+//  여기 BANNED_WORDS 배열의 단어만 추가·삭제하면 됩니다. (2글자 이상, 명백한 단어 권장)
+const BANNED_WORDS = [
+  // 욕설
+  "시발", "씨발", "씨빨", "시빨", "씨발놈", "시발년", "개새끼", "개색기", "개세끼", "개시키",
+  "썅", "쌍놈", "쌍년", "개년", "개놈", "존나", "존만", "좆같", "좆나", "니미", "느금마", "애미뒤",
+  "병신", "븅신", "등신", "지랄", "닥쳐", "꺼져", "엿먹어", "미친놈", "미친년", "씹새", "씹창", "좆",
+  // 성적 표현
+  "섹스", "야동", "포르노", "자위", "딸딸이", "창녀", "걸레같", "발정",
+  // ⚠ 아래는 정상 단어에도 걸릴 수 있어요(예: '바라보지마', '곤충의 변태'). 오탐 생기면 그 줄만 지우세요.
+  "보지", "자지", "후장", "변태",
+];
+
+// 텍스트를 청소(공백·특수문자 제거·소문자화)한 뒤 금칙어 포함 여부 검사 → 걸린 단어 반환
+function findBannedWord(text) {
+  const cleaned = String(text || "")
+    .toLowerCase()
+    .replace(/[\s.,!?*\-_~^·'"()\[\]{}<>\/\\|@#$%&+=]/g, "");
+  return BANNED_WORDS.find(w => cleaned.includes(w.toLowerCase()));
+}
+
 let me = null;
 let categories = [];
 let phaseOpen = true;
@@ -82,6 +103,14 @@ $("regForm").addEventListener("submit", async (e) => {
     story: $("story").value.trim(),
     price: Number($("price").value),
   };
+
+  // 금칙어 검사 (물품명·소개글·용도) — 걸리면 등록/수정 중단
+  const _bad = findBannedWord(`${fields.name} ${fields.story} ${fields.usage}`);
+  if (_bad) {
+    $("message").style.color = "#c53030";
+    $("message").textContent = "부적절한 표현이 포함되어 등록할 수 없어요. 표현을 수정해주세요.";
+    return;
+  }
 
   $("submitBtn").disabled = true;
   $("submitBtn").textContent = editingId ? "저장 중…" : "등록 중…";
